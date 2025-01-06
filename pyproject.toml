@@ -23,12 +23,8 @@ Issues = "https://github.com/nicoabarca/mpvis/issues"
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-package-dir = {"mpvis" = "src"}
-packages = ["mpvis"]
-
-[tool.setuptools.package-data]
-mpvis = ["py.typed"]
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
