@@ -173,7 +173,7 @@ activities_to_group = ["A", "B", "C"]
 manual_grouped_log = mddrt.manual_log_grouping(
     event_log=event_log, 
     activities_to_group=activities_to_group,
-    group_name= "Grouped Activities" # Optional
+    group_name="Grouped Activities" # Optional
     )
 ```
 ### Log pruning by number of variants
