@@ -1,6 +1,6 @@
 import pandas as pd
-from mpdfg.dfg_parameters import DirectlyFollowsGraphParameters
-from mpdfg.dfg_builder import DirectlyFollowsGraphBuilder
+from mpvis.mpdfg.dfg_parameters import DirectlyFollowsGraphParameters
+from mpvis.mpdfg.dfg_builder import DirectlyFollowsGraphBuilder
 
 
 class DirectlyFollowsGraph:

@@ -1,6 +1,6 @@
 r"""Functions to discover and visualize multi perspective DFGs"""
 
-from mpdfg.actions import (
+from mpvis.mpdfg.actions import (
     discover_multi_perspective_dfg,
     filter_multi_perspective_dfg_activities,
     filter_multi_perspective_dfg_paths,
@@ -9,4 +9,4 @@ from mpdfg.actions import (
     save_vis_multi_perspective_dfg,
 )
 
-from mpdfg.log_formatter import log_formatter
+from mpvis.mpdfg.log_formatter import log_formatter

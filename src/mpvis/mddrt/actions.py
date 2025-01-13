@@ -2,12 +2,12 @@ from typing import Literal
 
 import pandas as pd
 
-from mddrt.drt_parameters import DirectlyRootedTreeParameters
-from mddrt.tree_builder import DirectlyRootedTreeBuilder
-from mddrt.tree_diagrammer import DirectlyRootedTreeDiagrammer
-from mddrt.tree_grouper import DirectedRootedTreeGrouper
-from mddrt.tree_node import TreeNode
-from mddrt.utils.actions import save_graphviz_diagram, view_graphviz_diagram
+from mpvis.mddrt.drt_parameters import DirectlyRootedTreeParameters
+from mpvis.mddrt.tree_builder import DirectlyRootedTreeBuilder
+from mpvis.mddrt.tree_diagrammer import DirectlyRootedTreeDiagrammer
+from mpvis.mddrt.tree_grouper import DirectedRootedTreeGrouper
+from mpvis.mddrt.tree_node import TreeNode
+from mpvis.mddrt.utils.actions import save_graphviz_diagram, view_graphviz_diagram
 
 
 def discover_multi_dimensional_drt(

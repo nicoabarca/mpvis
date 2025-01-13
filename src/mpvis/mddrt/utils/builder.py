@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING, Literal
 import pandas as pd
 from tqdm import tqdm
 
-from mddrt.utils.optional_activities import OptionalActivities
+from mpvis.mddrt.utils.optional_activities import OptionalActivities
 
 if TYPE_CHECKING:
-    from mddrt.drt_parameters import DirectlyRootedTreeParameters
+    from mpvis.mddrt.drt_parameters import DirectlyRootedTreeParameters
 
 
 def calculate_cases_metrics(

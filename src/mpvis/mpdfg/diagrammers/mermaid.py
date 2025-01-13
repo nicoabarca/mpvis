@@ -1,4 +1,4 @@
-from mpdfg.utils.diagrammer import (
+from mpvis.mpdfg.utils.diagrammer import (
     background_color,
     dimensions_min_and_max,
     format_time,

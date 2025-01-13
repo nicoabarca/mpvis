@@ -1,7 +1,7 @@
 import pandas as pd
 import pm4py
 
-from mddrt.tree_node import TreeNode
+from mpvis.mddrt.tree_node import TreeNode
 
 
 def prune_tree_to_depth(node: TreeNode, max_depth: int) -> None:

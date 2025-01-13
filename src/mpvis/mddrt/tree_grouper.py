@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from mddrt.tree_node import TreeNode
+from mpvis.mddrt.tree_node import TreeNode
 
 
 class DirectedRootedTreeGrouper:
@@ -51,7 +51,7 @@ class DirectedRootedTreeGrouper:
         self.replace_old_nodes_with_new(parent_node, new_node, nodes)
 
     def create_new_node_name(self, nodes: list[TreeNode]) -> str:
-        return f"{len(nodes)} activities, from <br/> {nodes[0].name}, to <br/> {nodes[-1].name}"  # TODO: add a flag to show or not activities array or just only len
+        return f"{len(nodes)} activities, from {nodes[0].name}, to {nodes[-1].name}"  # TODO: add a flag to show or not activities array or just only len
 
     def replace_old_nodes_with_new(self, parent_node: TreeNode, new_node: TreeNode, nodes: list[TreeNode]) -> None:
         first_node_index = parent_node.children.index(nodes[0])

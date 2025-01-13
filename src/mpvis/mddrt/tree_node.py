@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
 
-from mddrt.utils.builder import activities_dimension_cumsum, create_dimensions_data
-from mddrt.utils.optional_activities import OptionalActivities
-from mddrt.utils.misc import pretty_format_dict
+from mpvis.mddrt.utils.builder import activities_dimension_cumsum, create_dimensions_data
+from mpvis.mddrt.utils.optional_activities import OptionalActivities
+from mpvis.mddrt.utils.misc import pretty_format_dict
 
 if TYPE_CHECKING:
     from datetime import timedelta

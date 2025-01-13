@@ -2,7 +2,7 @@ import tempfile
 import shutil
 from math import sqrt
 from graphviz import Source
-from mpdfg.utils.constants import MERMAID_UPPER_HTML, MERMAID_LOWER_HTML
+from mpvis.mpdfg.utils.constants import MERMAID_UPPER_HTML, MERMAID_LOWER_HTML
 
 
 def save_graphviz_diagram(dfg_string: str, file_path: str, format: str):

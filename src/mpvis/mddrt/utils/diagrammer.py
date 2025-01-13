@@ -4,7 +4,7 @@ from collections import deque
 from datetime import timedelta
 from typing import TYPE_CHECKING, Literal
 
-from mddrt.utils.color_schemes import (
+from mpvis.mddrt.utils.color_schemes import (
     COST_COLOR_SCHEME,
     FLEXIBILITY_COLOR_SCHEME,
     FREQUENCY_COLOR_SCHEME,
@@ -13,7 +13,7 @@ from mddrt.utils.color_schemes import (
 )
 
 if TYPE_CHECKING:
-    from mddrt.tree_node import TreeNode
+    from mpvis.mddrt.tree_node import TreeNode
 
 
 def dimensions_min_and_max(tree_root: TreeNode) -> dict[str, list[int]]:

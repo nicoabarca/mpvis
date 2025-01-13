@@ -5,12 +5,12 @@ import tempfile
 import shutil
 from graphviz import Source
 from typing import Tuple
-from mpdfg.utils.actions import save_graphviz_diagram, save_mermaid_diagram, image_size
-from mpdfg.utils.filters import filter_dfg_activities, filter_dfg_paths
-from mpdfg.dfg import DirectlyFollowsGraph
-from mpdfg.dfg_parameters import DirectlyFollowsGraphParameters
-from mpdfg.diagrammers.graphviz import GraphVizDiagrammer
-from mpdfg.diagrammers.mermaid import MermaidDiagrammer
+from mpvis.mpdfg.utils.actions import save_graphviz_diagram, save_mermaid_diagram, image_size
+from mpvis.mpdfg.utils.filters import filter_dfg_activities, filter_dfg_paths
+from mpvis.mpdfg.dfg import DirectlyFollowsGraph
+from mpvis.mpdfg.dfg_parameters import DirectlyFollowsGraphParameters
+from mpvis.mpdfg.diagrammers.graphviz import GraphVizDiagrammer
+from mpvis.mpdfg.diagrammers.mermaid import MermaidDiagrammer
 
 
 def discover_multi_perspective_dfg(
@@ -243,7 +243,7 @@ def save_vis_multi_perspective_dfg(
     visualize_time: bool = True,
     visualize_cost: bool = True,
     cost_currency: str = "USD",
-    format: str = "png",
+    format: str = "svg",
     rankdir: str = "TD",
     diagram_tool: str = "graphviz",
 ):
@@ -259,7 +259,7 @@ def save_vis_multi_perspective_dfg(
         visualize_time (bool, optional): Whether to visualize the time of activities. Defaults to True.
         visualize_cost (bool, optional): Whether to visualize the cost of activities. Defaults to True.
         cost_currency (str, optional): The currency used for cost visualization. Defaults to "USD".
-        format (str, optional): The format of the visual representation file. Defaults to "png". More output formats can be found at https://graphviz.org/docs/outputs
+        format (str, optional): The format of the visual representation file. Defaults to "svg". More output formats can be found at https://graphviz.org/docs/outputs
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD".
         diagram_tool (str | "graphviz" | "mermaid", optional): The diagram tool to use for building the diagram. Defaults to "graphviz".
 

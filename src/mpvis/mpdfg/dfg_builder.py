@@ -1,4 +1,4 @@
-from mpdfg.utils.builder import (
+from mpvis.mpdfg.utils.builder import (
     new_activity_dict,
     new_connection_dict,
     statistics_names_mapping,

@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING, Callable, Literal
 
 import graphviz
 
-from mddrt.utils.constants import (
+from mpvis.mddrt.utils.constants import (
     GRAPHVIZ_ACTIVITY,
     GRAPHVIZ_ACTIVITY_DATA,
     GRAPHVIZ_STATE_NODE,
     GRAPHVIZ_STATE_NODE_ROW,
 )
-from mddrt.utils.diagrammer import (
+from mpvis.mddrt.utils.diagrammer import (
     background_color,
     dimensions_min_and_max,
     dimensions_to_diagram,
@@ -22,7 +22,7 @@ from mddrt.utils.diagrammer import (
 if TYPE_CHECKING:
     from datetime import timedelta
 
-    from mddrt.tree_node import TreeNode
+    from mpvis.mddrt.tree_node import TreeNode
 
 METRIC = Literal[
     "total",

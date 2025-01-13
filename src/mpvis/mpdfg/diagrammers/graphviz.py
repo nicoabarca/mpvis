@@ -1,13 +1,13 @@
 import graphviz
 
-from mpdfg.utils.constants import (
+from mpvis.mpdfg.utils.constants import (
     GRAPHVIZ_LINK_DATA,
     GRAPHVIZ_LINK_DATA_ROW,
     GRAPHVIZ_NODE_DATA,
     GRAPHVIZ_NODE_DATA_ROW,
     GRAPHVIZ_START_END_LINK_DATA,
 )
-from mpdfg.utils.diagrammer import (
+from mpvis.mpdfg.utils.diagrammer import (
     background_color,
     dimensions_min_and_max,
     format_time,

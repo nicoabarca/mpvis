@@ -1,5 +1,5 @@
 from datetime import timedelta
-from mpdfg.utils.color_scales import (
+from mpvis.mpdfg.utils.color_scales import (
     TIME_COLOR_SCALE,
     FREQUENCY_COLOR_SCALE,
     COST_COLOR_SCALE,
