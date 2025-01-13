@@ -19,15 +19,8 @@ Homepage = "https://github.com/nicoabarca/mpvis"
 Issues = "https://github.com/nicoabarca/mpvis/issues"
 
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-package-dir = {"" = "src/mpvis"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
