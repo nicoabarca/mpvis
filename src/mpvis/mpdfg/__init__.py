@@ -8,5 +8,3 @@ from mpvis.mpdfg.actions import (
     view_multi_perspective_dfg,
     save_vis_multi_perspective_dfg,
 )
-
-from mpvis.mpdfg.log_formatter import log_formatter
