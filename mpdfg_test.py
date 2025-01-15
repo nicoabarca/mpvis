@@ -3,6 +3,7 @@ import os
 import pandas as pd
 
 from mpvis import mpdfg, preprocessing
+import mpvis
 
 blasting_event_log_path = os.path.join("data", "blasting_with_rework_event_log.csv")
 
@@ -21,7 +22,7 @@ blasting_format = {
 }
 
 
-blasting_event_log = preprocessing.log_formatter(blasting_event_log, blasting_format)
+blasting_event_log = mpvis.log_formatter(blasting_event_log, blasting_format)
 freq_statistics = ["absolute-activity", "absolute-case", "relative-case", "relative-activity"]
 numbers_statistics = ["mean", "min", "max", "stdev", "median", "sum"]
 (

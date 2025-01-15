@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pandas as pd
 
+import mpvis
+
 from mpvis import mddrt, preprocessing
 
 minimal_log_path = Path("data") / "minimal_log_5.csv"
@@ -16,7 +18,7 @@ minimal_format = {
     "org:resource": "",
     "cost:total": "cost",
 }
-minimal_event_log = preprocessing.log_formatter(minimal_event_log, minimal_format)
+minimal_event_log = mpvis.log_formatter(minimal_event_log, minimal_format)
 
 bug_log_path = Path("data") / "Bug1.csv"
 bug_event_log = pd.read_csv(bug_log_path, sep=",")
@@ -28,7 +30,7 @@ bug_format = {
     "org:resource": "PPS rango",
     "cost:total": "",
 }
-bug_event_log = preprocessing.log_formatter(bug_event_log, bug_format, timestamp_format="mixed")
+bug_event_log = mpvis.log_formatter(bug_event_log, bug_format, timestamp_format="mixed")
 
 
 blasting_log_path = Path("data") / "blasting_with_rework_event_log.csv"
@@ -41,7 +43,7 @@ blasting_format = {
     "org:resource": "Resource",
     "cost:total": "Cost",
 }
-blasting_event_log = preprocessing.log_formatter(blasting_event_log, blasting_format)
+blasting_event_log = mpvis.log_formatter(blasting_event_log, blasting_format)
 
 # TESTING CODE
 drt = mddrt.discover_multi_dimensional_drt(minimal_event_log)

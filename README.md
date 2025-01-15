@@ -26,7 +26,7 @@ pip install mpvis
 
 This package has three main modules:
 
-- `preprocessing` has functionalities for log formatting, log pruning based on top _k_ variants and manual grouping of log activities.
+- `preprocessing` has functionalities for log pruning based on top _k_ variants and manual grouping of log activities.
 - `mpdfg` to discover and visualize Multi-Perspective Directly-Follows Graphs (DFG)
 - `mddrt` to discover and visualize Multi-Dimensional Directed-Rooted Trees (DRT)
 
@@ -34,7 +34,7 @@ This package has three main modules:
 
 ### Format event log
 
-Using `preprocessing.log_formatter` you can format your own initial event log with the corresponding column names, based on [pm4py](https://pm4py.fit.fraunhofer.de) standard way of naming logs columns.
+Using `mpvis.log_formatter` you can format your own initial event log with the corresponding column names, based on [pm4py](https://pm4py.fit.fraunhofer.de) standard way of naming logs columns.
 
 The format dictionary to pass as argument to this function needs to have the following structure:
 
@@ -52,7 +52,7 @@ The format dictionary to pass as argument to this function needs to have the fol
 Each value of the dictionary needs to match the corresponding column name of the initial event log. If `start_timestamp`, `org:resource` and `cost:total` are not present in your event log, you can leave its values as blank strings.
 
 ```py
-from mpvis import preprocessing
+import mpvis
 import pandas as pd
 
 raw_event_log = pd.read_csv("raw_event_log.csv")
@@ -66,7 +66,7 @@ format_dictionary = {
     "cost:total": "Cost",
 }
 
-event_log = preprocessing.log_formatter(raw_event_log, format_dictionary)
+event_log = mpvis.log_formatter(raw_event_log, format_dictionary)
 ```
 
 ### Manual log grouping of activities
@@ -188,7 +188,7 @@ drt = mddrt.discover_multi_dimensional_drt(
 ### Get the DRT diagram string representation
 
 ```py
-mddrt_string = mpdfg.get_multi_dimension_drt_string(
+mddrt_string = mddrt.get_multi_dimension_drt_string(
     multi_dimensional_drt,
     visualize_time=True,
     visualize_cost=True,
