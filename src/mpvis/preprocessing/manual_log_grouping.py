@@ -13,7 +13,7 @@ class ManualLogGrouping:
     def __init__(
         self,
         log: pd.DataFrame,
-        activities_to_group: set[str],
+        activities_to_group: list[str],
         group_name: str,
         case_id_key: str = "case:concept:name",
         activity_id_key: str = "concept:name",
@@ -120,6 +120,11 @@ class ManualLogGrouping:
     ) -> float | int | str | timedelta:
         base_value = base_activity[column_name]
         incoming_value = incoming_activity[column_name]
+
+        if not self.can_be_summed(base_value, incoming_value):
+            error_message = f"Incompatible types for addition: cannot sum {base_value} ({type(base_value).__name__}) and {incoming_value} ({type(incoming_value).__name__}). Ensure that the data types are compatible."
+            raise ValueError(error_message)
+
         if (
             pd.api.types.is_integer(base_value)
             or pd.api.types.is_float(base_value)
@@ -138,6 +143,12 @@ class ManualLogGrouping:
             return f"{base_value}-{incoming_value}"
         error_message = f"Unsupported data type: {type(base_value).__name__}. Try convert it before manual grouping"
         raise TypeError(error_message)
+    
+    def can_be_summed(self, base_value, incoming_value):
+        try:
+            base_value + incoming_value
+        except TypeError:
+            return False
 
     def get_grouped_log(self) -> pd.DataFrame:
         return pd.DataFrame.from_dict(self.grouped_log, orient="index")
