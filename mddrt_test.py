@@ -5,8 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 import mpvis
-
-from mpvis import mddrt, preprocessing
+from mpvis import mddrt
 
 minimal_log_path = Path("data") / "minimal_log_5.csv"
 minimal_event_log = pd.read_csv(minimal_log_path, sep=";")
@@ -47,9 +46,11 @@ blasting_event_log = mpvis.log_formatter(blasting_event_log, blasting_format)
 
 # TESTING CODE
 drt = mddrt.discover_multi_dimensional_drt(minimal_event_log)
+
+grouped_drt = mddrt.discover_multi_dimensional_drt(minimal_event_log, group_activities=True, show_names=True)
 # mddrt.save_vis_multi_dimensional_drt(drt, file_path="blasting", format="svg")
 mddrt.view_multi_dimensional_drt(
-    drt, node_measures=["total", "consumed", "remaining"], arc_measures=["avg"], format="png"
+    grouped_drt, node_measures=["total", "consumed", "remaining"], arc_measures=["avg"], format="png"
 )
 breakpoint()
 

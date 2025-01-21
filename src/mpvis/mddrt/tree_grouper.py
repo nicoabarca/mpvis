@@ -55,7 +55,7 @@ class DirectedRootedTreeGrouper:
         if not self.show_names:
             return f"{len(nodes)} activities, from {nodes[0].name} </br> , to {nodes[-1].name} </br>"  # TODO: add a flag to show or not activities array or just only len
 
-        node_name = f"{len(nodes)} activities </br>"
+        node_name = f"{len(nodes)} activities, </br>"
         for node in nodes:
             node_name += f"{node.name} </br>"
         return node_name
