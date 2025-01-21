@@ -20,7 +20,7 @@ class ManualLogGrouping:
         start_timestamp_key: str | None = "start_timestamp",
         timestamp_key: str = "time:timestamp",
     ) -> None:
-        self.log: pd.DataFrame = log
+        self.log: pd.DataFrame = log.copy(deep=True)
         self.activities_to_group: list[str] = activities_to_group
         self.group_name: str = self.set_group_name(group_name, activities_to_group)
         self.case_id_key: str = case_id_key
@@ -33,6 +33,7 @@ class ManualLogGrouping:
         self.actual_activities_index: int = 0
         self.actual_activities_grouping_index: int = 0
         self.validate_activities_to_group()
+        self.cast_object_type_columns_to_string()
         self.group()
 
     def set_group_name(self, group_name: str | None, activities_to_group: list[str]) -> str:
@@ -48,6 +49,11 @@ class ManualLogGrouping:
         if has_duplicated:
             error_message = "Activities to group has duplicated elements. Keep only one occurrence of activity name."
             raise ValueError(error_message)
+
+    def cast_object_type_columns_to_string(self) -> None:
+        for col in self.log.columns:
+            if self.log[col].dtype == "object":
+                self.df[col] = self.df[col].astype(str)
 
     def group(self) -> None:
         cases_grouped_by_id = self.log.groupby(self.case_id_key, dropna=True, sort=False)
@@ -132,7 +138,7 @@ class ManualLogGrouping:
         ):
             return base_value + incoming_value
         if pd.api.types.is_string_dtype(type(base_value)):
-            if "[" in base_value or "]" in base_value:  # TODO: ordenarlos de forma alfabetica
+            if "[" in base_value or "]" in base_value:
                 return f"{base_value.replace(']', '')},{incoming_value}]"
             return f"[{base_value},{incoming_value}]"
         if pd.api.types.is_datetime64_any_dtype(type(base_value)):
@@ -143,7 +149,7 @@ class ManualLogGrouping:
             return f"{base_value}-{incoming_value}"
         error_message = f"Unsupported data type: {type(base_value).__name__}. Try convert it before manual grouping"
         raise TypeError(error_message)
-    
+
     def can_be_summed(self, base_value, incoming_value):
         try:
             base_value + incoming_value
@@ -187,6 +193,7 @@ def manual_log_grouping(
     Returns:
         pd.DataFrame: A new DataFrame with the grouped activities, keeping the original structure
         of the log but modifying the activities defined in `activities_to_group`.
+
     """
     manual_log_grouping = ManualLogGrouping(
         log, activities_to_group, group_name, case_id_key, activity_id_key, start_timestamp_key, timestamp_key
