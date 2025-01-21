@@ -17,6 +17,7 @@ def discover_multi_dimensional_drt(
     calculate_quality: bool = True,
     calculate_flexibility: bool = True,
     group_activities: bool = False,
+    show_names: bool = False,
     case_id_key: str = "case:concept:name",
     activity_key: str = "concept:name",
     timestamp_key: str = "time:timestamp",
@@ -41,6 +42,7 @@ def discover_multi_dimensional_drt(
         calculate_flexibility (bool, optional): Whether to calculate and include the flexibility dimension in the DRT.
                                                 Defaults to True.
         group_activities (bool, optional): Whether to group activities that follows a single child path within the DRT. Defaults to False.
+        show_names (bool, optional): Whether to show the names of the grouped activities. Defaults to False.
         case_id_key (str, optional): The key for case IDs in the event log. Defaults to "case:concept:name".
         activity_key (str, optional): The key for activity names in the event log. Defaults to "concept:name".
         timestamp_key (str, optional): The key for timestamps in the event log. Defaults to "time:timestamp".
@@ -59,6 +61,7 @@ def discover_multi_dimensional_drt(
           the `DirectlyRootedTreeBuilder` class to build the tree.
         - If `group_activities` is set to True, the function will group similar activities within the tree
           using the `group_drt_activities` function.
+
     """
     parameters = DirectlyRootedTreeParameters(
         case_id_key,
@@ -73,22 +76,24 @@ def discover_multi_dimensional_drt(
     )
     multi_dimensional_drt = DirectlyRootedTreeBuilder(log, parameters).get_tree()
     if group_activities:
-        multi_dimensional_drt = group_drt_activities(multi_dimensional_drt)
+        multi_dimensional_drt = group_drt_activities(multi_dimensional_drt, show_names)
 
     return multi_dimensional_drt
 
 
-def group_drt_activities(multi_dimensional_drt: TreeNode) -> TreeNode:
+def group_drt_activities(multi_dimensional_drt: TreeNode, show_names: bool = False) -> TreeNode:
     """
     Groups activities in a multi-dimensional directed rooted tree (DRT).
 
     Args:
         multi_dimension_drt (TreeNode): The root of the multi-dimensional DRT.
+        show_names (bool, optional): Whether to show the names of the grouped activities. Defaults to False.
 
     Returns:
         TreeNode: The root of the grouped multi-dimensional DRT.
+
     """
-    grouper = DirectedRootedTreeGrouper(multi_dimensional_drt)
+    grouper = DirectedRootedTreeGrouper(multi_dimensional_drt, show_names)
     return grouper.get_tree()
 
 
@@ -120,8 +125,10 @@ def get_multi_dimensional_drt_string(
             - "min": Minimum measure of the arc.
             - "max": Maximum measure of the arc.
             Defaults to [].
+
     Returns:
         str: A string representation of the multi-dimensional DRT diagram.
+
     """
     diagrammer = DirectlyRootedTreeDiagrammer(
         multi_dimensional_drt,
@@ -147,6 +154,7 @@ def view_multi_dimensional_drt(
 ) -> None:
     """
     Visualizes a multi-dimensional directly rooted tree (DRT) using a graphical format.
+
     Args:
         multi_dimension_drt (TreeNode): The root of the multi-dimensional DRT.
         visualize_time (bool, optional): Whether to include the time dimension in the visualization. Defaults to True.
@@ -164,12 +172,14 @@ def view_multi_dimensional_drt(
             - "min": Minimum measure of the arc.
             - "max": Maximum measure of the arc.
             Defaults to [].
+
     Raises:
         IOError: If the temporary file cannot be created or read.
+
     Returns:
         None
-    """
 
+    """
     drt_string = get_multi_dimensional_drt_string(
         multi_dimensional_drt,
         visualize_time=visualize_time,
@@ -217,6 +227,7 @@ def save_vis_multi_dimensional_drt(
 
     Returns:
         None
+
     """
     drt_string = get_multi_dimensional_drt_string(
         multi_dimensional_drt,
