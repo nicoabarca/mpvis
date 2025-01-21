@@ -218,7 +218,7 @@ def view_multi_perspective_dfg(
     )
     tmp_file = tempfile.NamedTemporaryFile(suffix=".gv")
     tmp_file.close()
-    src = Source(dfg_string, tmp_file.name, format="png")
+    src = Source(dfg_string, tmp_file.name, format="svg") # TODO: CHECK IS THIS DOES NOT MAKE THE PROGRAM FAIL
 
     render = src.render(cleanup=True)
     shutil.copyfile(render, tmp_file.name)

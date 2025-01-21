@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import copy
 from typing import TYPE_CHECKING, Literal
 
 from mpvis.mddrt.utils.builder import activities_dimension_cumsum, create_dimensions_data
-from mpvis.mddrt.utils.optional_activities import OptionalActivities
 from mpvis.mddrt.utils.misc import pretty_format_dict
+from mpvis.mddrt.utils.optional_activities import OptionalActivities
 
 if TYPE_CHECKING:
     from datetime import timedelta
@@ -107,10 +108,9 @@ class TreeNode:
         dimension_data["max"] = max(dimension_data["max"], value_to_compare)
         dimension_data["min"] = min(dimension_data["min"], value_to_compare)
 
-    def set_optional_status(self, optional_activities: list[str] )-> None:
+    def set_optional_status(self, optional_activities: list[str]) -> None:
         if "is_optional" in self.dimensions_data["flexibility"]:
             return
-
         if self.name in optional_activities:
             self.dimensions_data["flexibility"]["is_optional"] = "Yes"
         else:
@@ -126,7 +126,19 @@ class TreeNode:
         else:
             self.dimensions_data["quality"]["is_rework"] = "No"
 
+    def deep_copy(self):
+        def copy_node(node: TreeNode, parent: TreeNode = None) -> TreeNode:
+            new_node = TreeNode(node.name, node.depth)
+            new_node.frequency = node.frequency
+            new_node.dimensions_data = copy.deepcopy(node.dimensions_data)
+            new_node.parent = parent
 
+            for child in node.children:
+                new_node.children.append(copy_node(child, new_node))
+
+            return new_node
+
+        return copy_node(self)
 
     def __str__(self) -> str:
         return f"""
