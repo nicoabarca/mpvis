@@ -53,7 +53,7 @@ class ManualLogGrouping:
     def cast_object_type_columns_to_string(self) -> None:
         for col in self.log.columns:
             if self.log[col].dtype == "object":
-                self.df[col] = self.df[col].astype(str)
+                self.log[col] = self.log[col].astype(str)
 
     def group(self) -> None:
         cases_grouped_by_id = self.log.groupby(self.case_id_key, dropna=True, sort=False)
@@ -127,9 +127,9 @@ class ManualLogGrouping:
         base_value = base_activity[column_name]
         incoming_value = incoming_activity[column_name]
 
-        if not self.can_be_summed(base_value, incoming_value):
-            error_message = f"Incompatible types for addition: cannot sum {base_value} ({type(base_value).__name__}) and {incoming_value} ({type(incoming_value).__name__}). Ensure that the data types are compatible."
-            raise ValueError(error_message)
+        # if not self.can_be_summed(base_value, incoming_value):
+        #     error_message = f"Incompatible types for addition: cannot sum {base_value} ({type(base_value).__name__}) and {incoming_value} ({type(incoming_value).__name__}). Ensure that the data types are compatible."
+        #     raise ValueError(error_message)
 
         if (
             pd.api.types.is_integer(base_value)
