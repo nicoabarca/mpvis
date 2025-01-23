@@ -195,7 +195,6 @@ def view_multi_perspective_dfg(
     cost_currency: str = "USD",
     rankdir: str = "TD",
     format: str = "svg",
-    figsize: Tuple = None,
 ):
     """
     Visualizes a multi-perspective Directly-Follows Graph (DFG) using graphviz in interactive Python environments.
@@ -210,7 +209,6 @@ def view_multi_perspective_dfg(
         cost_currency (str, optional): The currency symbol to be displayed with the cost. Defaults to "USD".
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD" (top-down).
         format (str, optional): The file format of the visualization output (e.g., "jpg", "png", "jpeg", "svg", "webp"). Defaults to "svg".
-        figsize (Tuple, optional): The width and height of the displayed diagram. Defaults to None.
 
     Raises:
         IOError: if the temporary file cannot be created or read.
