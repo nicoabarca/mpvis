@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import copy
 from typing import TYPE_CHECKING, Literal
 
 from mpvis.mddrt.utils.builder import activities_dimension_cumsum, create_dimensions_data
-from mpvis.mddrt.utils.optional_activities import OptionalActivities
 from mpvis.mddrt.utils.misc import pretty_format_dict
+from mpvis.mddrt.utils.optional_activities import OptionalActivities
 
 if TYPE_CHECKING:
     from datetime import timedelta
@@ -78,6 +79,7 @@ class TreeNode:
         activities_till_depth = [activity["name"] for activity in current_case["activities"]][: depth + 1]
         accumulated_rework = len(activities_till_depth) - len(set(activities_till_depth))
         self.update_cumulative_data(dimension_data, accumulated_rework, accumulated_rework, current_case["quality"])
+        self.set_rework_status(current_case["activities"])
 
     def update_flexibility_dimension(self, depth: int, current_case: dict) -> None:
         dimension_data = self.dimensions_data["flexibility"]
@@ -88,6 +90,7 @@ class TreeNode:
         self.update_cumulative_data(
             dimension_data, accumulated_optionality, accumulated_optionality, current_case["flexibility"]
         )
+        self.set_optional_status(optional_activities)
 
     def update_cumulative_data(
         self,
@@ -104,6 +107,38 @@ class TreeNode:
     def update_min_max(self, dimension_data: dict, value_to_compare: float | timedelta) -> None:
         dimension_data["max"] = max(dimension_data["max"], value_to_compare)
         dimension_data["min"] = min(dimension_data["min"], value_to_compare)
+
+    def set_optional_status(self, optional_activities: list[str]) -> None:
+        if "is_optional" in self.dimensions_data["flexibility"]:
+            return
+        if self.name in optional_activities:
+            self.dimensions_data["flexibility"]["is_optional"] = "Yes"
+        else:
+            self.dimensions_data["flexibility"]["is_optional"] = "No"
+
+    def set_rework_status(self, current_case_activities: list[str]):
+        prev_activities = [act["name"] for act in current_case_activities[: self.depth]]
+
+        if "is_rework" in self.dimensions_data["quality"]:
+            return
+        if self.name in prev_activities:
+            self.dimensions_data["quality"]["is_rework"] = "Yes"
+        else:
+            self.dimensions_data["quality"]["is_rework"] = "No"
+
+    def deep_copy(self):
+        def copy_node(node: TreeNode, parent: TreeNode = None) -> TreeNode:
+            new_node = TreeNode(node.name, node.depth)
+            new_node.frequency = node.frequency
+            new_node.dimensions_data = copy.deepcopy(node.dimensions_data)
+            new_node.parent = parent
+
+            for child in node.children:
+                new_node.children.append(copy_node(child, new_node))
+
+            return new_node
+
+        return copy_node(self)
 
     def __str__(self) -> str:
         return f"""

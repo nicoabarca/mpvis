@@ -6,8 +6,9 @@ from mpvis.mddrt.tree_node import TreeNode
 
 
 class DirectedRootedTreeGrouper:
-    def __init__(self, tree: TreeNode) -> None:
+    def __init__(self, tree: TreeNode, show_names: bool = False) -> None:
         self.tree: TreeNode = tree
+        self.show_names: bool = show_names
         self.start_group()
 
     def start_group(self) -> None:
@@ -51,7 +52,13 @@ class DirectedRootedTreeGrouper:
         self.replace_old_nodes_with_new(parent_node, new_node, nodes)
 
     def create_new_node_name(self, nodes: list[TreeNode]) -> str:
-        return f"{len(nodes)} activities, from {nodes[0].name}, to {nodes[-1].name}"  # TODO: add a flag to show or not activities array or just only len
+        if not self.show_names:
+            return f"{len(nodes)} activities, from {nodes[0].name} </br> , to {nodes[-1].name} </br>"  # TODO: add a flag to show or not activities array or just only len
+
+        node_name = f"{len(nodes)} activities, </br>"
+        for node in nodes:
+            node_name += f"{node.name} </br>"
+        return node_name
 
     def replace_old_nodes_with_new(self, parent_node: TreeNode, new_node: TreeNode, nodes: list[TreeNode]) -> None:
         first_node_index = parent_node.children.index(nodes[0])
@@ -69,6 +76,7 @@ class DirectedRootedTreeGrouper:
             if dimension == "time":
                 self.group_time_dimension_in_new_node(grouped_node, nodes)
                 continue
+
             grouped_data = grouped_node.dimensions_data[dimension]
 
             grouped_data["total_case"] = data["total_case"]
@@ -78,6 +86,20 @@ class DirectedRootedTreeGrouper:
             grouped_data["total"] = self.calculate_total(nodes, dimension)
             grouped_data["min"] = self.calculate_min(nodes, dimension)
             grouped_data["max"] = self.calculate_max(nodes, dimension)
+
+            if dimension == "quality":
+                qty_of_reworked_activities = sum(
+                    1 for node in nodes if node.dimensions_data["quality"]["is_rework"] == "Yes"
+                )
+
+                grouped_data["is_rework"] = f"{qty_of_reworked_activities} reworked activities in group"
+
+            if dimension == "flexibility":
+                qty_of_optional_activities = sum(
+                    1 for node in nodes if node.dimensions_data["flexibility"]["is_optional"] == "Yes"
+                )
+
+                grouped_data["is_optional"] = f"{qty_of_optional_activities} optional activities in group"
 
     def group_time_dimension_in_new_node(self, grouped_node: TreeNode, nodes: list[TreeNode]) -> None:
         first_node = nodes[0]

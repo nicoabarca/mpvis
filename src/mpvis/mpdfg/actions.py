@@ -1,16 +1,13 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import tempfile
-import shutil
-from graphviz import Source
 from typing import Tuple
-from mpvis.mpdfg.utils.actions import save_graphviz_diagram, save_mermaid_diagram, image_size
-from mpvis.mpdfg.utils.filters import filter_dfg_activities, filter_dfg_paths
+
+import pandas as pd
+
 from mpvis.mpdfg.dfg import DirectlyFollowsGraph
 from mpvis.mpdfg.dfg_parameters import DirectlyFollowsGraphParameters
 from mpvis.mpdfg.diagrammers.graphviz import GraphVizDiagrammer
 from mpvis.mpdfg.diagrammers.mermaid import MermaidDiagrammer
+from mpvis.mpdfg.utils.actions import save_graphviz_diagram, save_mermaid_diagram, view_graphviz_diagram
+from mpvis.mpdfg.utils.filters import filter_dfg_activities, filter_dfg_paths
 
 
 def discover_multi_perspective_dfg(
@@ -46,6 +43,7 @@ def discover_multi_perspective_dfg(
 
     Returns:
         Tuple[dict, dict, dict]: A tuple containing the multi-perspective DFG, start activities, and end activities.
+
     """
     dfg_parameters = DirectlyFollowsGraphParameters(
         case_id_key,
@@ -74,7 +72,7 @@ def filter_multi_perspective_dfg_activities(
     start_activities: dict,
     end_activities: dict,
     sort_by: str = "frequency",
-    ascending: bool = True
+    ascending: bool = True,
 ):
     """
     Filters activities of a multi-perspective Directly-Follows Graph (DFG) diagram.
@@ -89,9 +87,13 @@ def filter_multi_perspective_dfg_activities(
 
     Returns:
         str: The filtered multi-perspective DFG.
+
     """
-    filtered_dfg = filter_dfg_activities(percentage, multi_perspective_dfg, start_activities, end_activities, sort_by, ascending)
+    filtered_dfg = filter_dfg_activities(
+        percentage, multi_perspective_dfg, start_activities, end_activities, sort_by, ascending
+    )
     return filtered_dfg
+
 
 def filter_multi_perspective_dfg_paths(
     percentage: float,
@@ -99,7 +101,7 @@ def filter_multi_perspective_dfg_paths(
     start_activities: dict,
     end_activities: dict,
     sort_by: str = "frequency",
-    ascending: bool = True
+    ascending: bool = True,
 ):
     """
     Filters paths of a multi-perspective Directly-Follows Graph (DFG) diagram.
@@ -114,9 +116,13 @@ def filter_multi_perspective_dfg_paths(
 
     Returns:
         str: The filtered multi-perspective DFG.
+
     """
-    filtered_dfg = filter_dfg_paths(percentage, multi_perspective_dfg, start_activities, end_activities, sort_by, ascending)
+    filtered_dfg = filter_dfg_paths(
+        percentage, multi_perspective_dfg, start_activities, end_activities, sort_by, ascending
+    )
     return filtered_dfg
+
 
 def get_multi_perspective_dfg_string(
     multi_perspective_dfg: dict,
@@ -148,6 +154,7 @@ def get_multi_perspective_dfg_string(
 
     Note:
         Mermaid diagrammer only supports saving the DFG diagram as a HTML file. It does not support viewing the diagram in interactive Python environments like Jupyter Notebooks and Google Colabs. Also the user needs internet connection to properly show the diagram in the HTML.
+
     """
     diagrammer = None
     if diagram_tool == "graphviz":
@@ -187,7 +194,7 @@ def view_multi_perspective_dfg(
     visualize_cost: bool = True,
     cost_currency: str = "USD",
     rankdir: str = "TD",
-    figsize: Tuple = None,
+    format: str = "svg",
 ):
     """
     Visualizes a multi-perspective Directly-Follows Graph (DFG) using graphviz in interactive Python environments.
@@ -201,10 +208,17 @@ def view_multi_perspective_dfg(
         visualize_cost (bool, optional): Whether to visualize the cost of activities. Defaults to True.
         cost_currency (str, optional): The currency symbol to be displayed with the cost. Defaults to "USD".
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD" (top-down).
-        figsize (Tuple, optional): The width and height of the displayed diagram. Defaults to None.
+        format (str, optional): The file format of the visualization output (e.g., "jpg", "png", "jpeg", "svg", "webp"). Defaults to "svg".
+
+    Raises:
+        IOError: if the temporary file cannot be created or read.
+
+    Returns:
+        None
 
     Note:
         View of multi perspective DFGs are only supported for diagram strings made with graphviz.
+
     """
     dfg_string = get_multi_perspective_dfg_string(
         multi_perspective_dfg=multi_perspective_dfg,
@@ -216,22 +230,8 @@ def view_multi_perspective_dfg(
         cost_currency=cost_currency,
         rankdir=rankdir,
     )
-    tmp_file = tempfile.NamedTemporaryFile(suffix=".gv")
-    tmp_file.close()
-    src = Source(dfg_string, tmp_file.name, format="png")
 
-    render = src.render(cleanup=True)
-    shutil.copyfile(render, tmp_file.name)
-
-    if not figsize:
-        figsize = image_size(multi_perspective_dfg, rankdir)
-
-    img = mpimg.imread(tmp_file.name)
-    plt.figure(figsize=figsize)
-    plt.axis("off")
-    plt.tight_layout(pad=0, w_pad=0, h_pad=0)
-    plt.imshow(img)
-    plt.show()
+    view_graphviz_diagram(dfg_string, format=format)
 
 
 def save_vis_multi_perspective_dfg(
@@ -250,7 +250,8 @@ def save_vis_multi_perspective_dfg(
     """
     Save a visual representation of a multi-perspective Directly-Follows Graph (DFG) to a file.
 
-    Parameters:
+    Parameters
+    ----------
         multi_perspective_dfg (dict): The multi-perspective DFG.
         start_activities (dict): A dictionary mapping start activities to their respective labels.
         end_activities (dict): A dictionary mapping end activities to their respective labels.
@@ -265,6 +266,7 @@ def save_vis_multi_perspective_dfg(
 
     Note:
         Mermaid diagrammer only supports saving the DFG diagram as a HTML file. It does not support viewing the diagram in interactive Python environments like Jupyter Notebooks and Google Colabs. Also the user needs internet connection to properly show the diagram in the HTML.
+
     """
     dfg_string = get_multi_perspective_dfg_string(
         multi_perspective_dfg=multi_perspective_dfg,

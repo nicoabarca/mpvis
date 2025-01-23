@@ -168,8 +168,14 @@ class DirectlyRootedTreeDiagrammer:
         minimum = self.format_value("min", dimension, node)
         link_row = f"{'Service' if dimension == 'time' else ''} {dimension.capitalize()}<br/>"
         link_row += f"Avg: {avg_total}<br/>" if "avg" in self.arc_measures else ""
-        link_row += f"Max: {maximum}<br/>" if "max" in self.arc_measures else ""
-        link_row += f"Min: {minimum}<br/>" if "min" in self.arc_measures else ""
+        if dimension  in ["time", "cost"]:
+            link_row += f"Max: {maximum}<br/>" if "max" in self.arc_measures else ""
+            link_row += f"Min: {minimum}<br/>" if "min" in self.arc_measures else ""
+        elif dimension == "flexibility":
+            link_row += f"Is Optional: {node.dimensions_data['flexibility']['is_optional']}<br/>"
+        elif dimension == "quality":
+            link_row += f"Is Rework: {node.dimensions_data['quality']['is_rework']}<br/>"
+
         return GRAPHVIZ_ACTIVITY_DATA.format(link_row)
 
     def format_value(
@@ -203,6 +209,8 @@ class DirectlyRootedTreeDiagrammer:
             node_name = node_name.replace(">", "&gt")
         if "=" in node_name:
             node_name = node_name.replace("=", "&#61;")
+        if "&lt/br&gt" in node_name:    
+            node_name = node_name.replace("&lt/br&gt", "<br/>")
 
         return f"{node_name} ({node.frequency})"
 
