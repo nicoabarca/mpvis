@@ -88,10 +88,18 @@ class DirectedRootedTreeGrouper:
             grouped_data["max"] = self.calculate_max(nodes, dimension)
 
             if dimension == "quality":
-                grouped_data["is_rework"] = any(node.dimensions_data["quality"]["is_rework"] for node in nodes)
+                qty_of_reworked_activities = sum(
+                    1 for node in nodes if node.dimensions_data["quality"]["is_rework"] == "Yes"
+                )
+
+                grouped_data["is_rework"] = f"{qty_of_reworked_activities} reworked activities in group"
 
             if dimension == "flexibility":
-                grouped_data["is_optional"] = any(node.dimensions_data["flexibility"]["is_optional"] for node in nodes)
+                qty_of_optional_activities = sum(
+                    1 for node in nodes if node.dimensions_data["flexibility"]["is_optional"] == "Yes"
+                )
+
+                grouped_data["is_optional"] = f"{qty_of_optional_activities} optional activities in group"
 
     def group_time_dimension_in_new_node(self, grouped_node: TreeNode, nodes: list[TreeNode]) -> None:
         first_node = nodes[0]
