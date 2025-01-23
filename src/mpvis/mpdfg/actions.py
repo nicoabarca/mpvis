@@ -1,17 +1,12 @@
-import shutil
-import tempfile
 from typing import Tuple
 
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
 import pandas as pd
-from graphviz import Source
 
 from mpvis.mpdfg.dfg import DirectlyFollowsGraph
 from mpvis.mpdfg.dfg_parameters import DirectlyFollowsGraphParameters
 from mpvis.mpdfg.diagrammers.graphviz import GraphVizDiagrammer
 from mpvis.mpdfg.diagrammers.mermaid import MermaidDiagrammer
-from mpvis.mpdfg.utils.actions import image_size, save_graphviz_diagram, save_mermaid_diagram
+from mpvis.mpdfg.utils.actions import save_graphviz_diagram, save_mermaid_diagram, view_graphviz_diagram
 from mpvis.mpdfg.utils.filters import filter_dfg_activities, filter_dfg_paths
 
 
@@ -199,6 +194,7 @@ def view_multi_perspective_dfg(
     visualize_cost: bool = True,
     cost_currency: str = "USD",
     rankdir: str = "TD",
+    format: str = "svg",
     figsize: Tuple = None,
 ):
     """
@@ -213,7 +209,14 @@ def view_multi_perspective_dfg(
         visualize_cost (bool, optional): Whether to visualize the cost of activities. Defaults to True.
         cost_currency (str, optional): The currency symbol to be displayed with the cost. Defaults to "USD".
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD" (top-down).
+        format (str, optional): The file format of the visualization output (e.g., "jpg", "png", "jpeg", "svg", "webp"). Defaults to "svg".
         figsize (Tuple, optional): The width and height of the displayed diagram. Defaults to None.
+
+    Raises:
+        IOError: if the temporary file cannot be created or read.
+
+    Returns:
+        None
 
     Note:
         View of multi perspective DFGs are only supported for diagram strings made with graphviz.
@@ -229,24 +232,8 @@ def view_multi_perspective_dfg(
         cost_currency=cost_currency,
         rankdir=rankdir,
     )
-    tmp_file = tempfile.NamedTemporaryFile(suffix=".gv")
-    tmp_file.close()
-    src = Source(
-        dfg_string, tmp_file.name, format="png"
-    )  # TODO: CHECK IS THIS DOES NOT MAKE THE PROGRAM FAIL IF CHANGE TO SVG
 
-    render = src.render(cleanup=True)
-    shutil.copyfile(render, tmp_file.name)
-
-    if not figsize:
-        figsize = image_size(multi_perspective_dfg, rankdir)
-
-    img = mpimg.imread(tmp_file.name)
-    plt.figure(figsize=figsize)
-    plt.axis("off")
-    plt.tight_layout(pad=0, w_pad=0, h_pad=0)
-    plt.imshow(img)
-    plt.show()
+    view_graphviz_diagram(dfg_string, format=format)
 
 
 def save_vis_multi_perspective_dfg(
