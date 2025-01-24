@@ -6,7 +6,11 @@ from mpvis.mpdfg.dfg import DirectlyFollowsGraph
 from mpvis.mpdfg.dfg_parameters import DirectlyFollowsGraphParameters
 from mpvis.mpdfg.diagrammers.graphviz import GraphVizDiagrammer
 from mpvis.mpdfg.diagrammers.mermaid import MermaidDiagrammer
-from mpvis.mpdfg.utils.actions import save_graphviz_diagram, save_mermaid_diagram, view_graphviz_diagram
+from mpvis.mpdfg.utils.actions import (
+    save_graphviz_diagram,
+    save_mermaid_diagram,
+    view_graphviz_diagram,
+)
 from mpvis.mpdfg.utils.filters import filter_dfg_activities, filter_dfg_paths
 
 

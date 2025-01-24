@@ -100,6 +100,8 @@ pruned_log_by_variants = preprocessing.prune_log_based_on_top_variants(event_log
 
 ### Discover Multi Perspective DFG
 
+Discovers a multi-perspective Directly-Follows Graph (DFG) from a log.
+
 ```py
 from mpvis import mpdfg
 
@@ -119,7 +121,47 @@ from mpvis import mpdfg
 
 ```
 
+### Filter DFG by activities
+
+Filters activities of a multi-perspective Directly-Follows Graph (DFG) diagram.
+
+```py
+from mpvis import mpdfg
+
+from mpvis import mpdfg
+
+activities_filtered_multi_perspective_dfg = mpdfg.filter_multi_perspective_dfg_activities(
+    percentage=0.5,
+    dfg=multi_perspective_dfg,
+    start_activities=start_activities,
+    end_activities=end_activities,
+    sort_by="frequency",
+    ascending=True,
+)
+
+```
+
+### Filter DFG by paths
+
+Filters paths of a multi-perspective Directly-Follows Graph (DFG) diagram.
+
+```py
+from mpvis import mpdfg
+
+activities_filtered_multi_perspective_dfg = mpdfg.filter_multi_perspective_dfg_paths(
+    percentage=0.5,
+    dfg=multi_perspective_dfg,
+    start_activities=start_activities,
+    end_activities=end_activities,
+    sort_by="frequency",
+    ascending=True,
+)
+
+```
+
 ### Get the DFG diagram string representation
+
+Creates a string representation of a multi-perspective Directly-Follows Graph (DFG) diagram.
 
 ```py
 mpdfg_string = mpdfg.get_multi_perspective_dfg_string(
@@ -172,6 +214,12 @@ mpdfg.save_vis_multi_perspective_dfg(
 
 ### Discover Multi-Dimensional DRT
 
+Discovers and constructs a multi-dimensional Directly Rooted Tree (DRT) from the provided event log.
+
+This function analyzes an event log and creates a multi-dimensional Directly Rooted Tree (DRT)
+representing the process model. The DRT is built based on various dimensions such as time, cost,
+quality, and flexibility, according to the specified parameters.
+
 ```py
 from mpvis import mddrt
 
@@ -182,10 +230,13 @@ drt = mddrt.discover_multi_dimensional_drt(
     calculate_flexibility=True,
     calculate_quality=True,
     group_activities=False,
+    show_names=False
 )
 ```
 
 ### Get the DRT diagram string representation
+
+Generates a string representation of a multi-dimensional directly rooted tree (DRT) diagram.
 
 ```py
 mddrt_string = mddrt.get_multi_dimension_drt_string(
@@ -218,6 +269,8 @@ mddrt.view_multi_dimensional_drt(
 > Not all output file formats of Graphviz are available to display in environments like Jupyter Notebook or Google Colab.
 
 ### Save the generated DRT diagram
+
+Saves a visualization of a multi-dimensional directly rooted tree (DRT) to a file.
 
 ```py
 mddrt.save_vis_multi_dimensional_drt(
