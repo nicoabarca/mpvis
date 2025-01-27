@@ -53,20 +53,26 @@ class DirectedRootedTreeGrouper:
 
     def create_new_node_name(self, nodes: list[TreeNode]) -> str:
         if not self.show_names:
-            return f"{len(nodes)} activities, from {nodes[0].name} </br> , to {nodes[-1].name} </br>"  # TODO: add a flag to show or not activities array or just only len
+            return (
+                f"{len(nodes)} activities,<br/> from {nodes[0].name} <br/>to {nodes[-1].name} <br/>"
+            )
 
-        node_name = f"{len(nodes)} activities, </br>"
+        node_name = f"{len(nodes)} activities, <br/>"
         for node in nodes:
-            node_name += f"{node.name} </br>"
+            node_name += f"{node.name} <br/>"
         return node_name
 
-    def replace_old_nodes_with_new(self, parent_node: TreeNode, new_node: TreeNode, nodes: list[TreeNode]) -> None:
+    def replace_old_nodes_with_new(
+        self, parent_node: TreeNode, new_node: TreeNode, nodes: list[TreeNode]
+    ) -> None:
         first_node_index = parent_node.children.index(nodes[0])
         parent_node.children[first_node_index] = new_node
         new_node.children = nodes[-1].children
         new_node.set_parent(parent_node)
 
-    def group_dimensions_data_in_new_node(self, grouped_node: TreeNode, nodes: list[TreeNode]) -> None:
+    def group_dimensions_data_in_new_node(
+        self, grouped_node: TreeNode, nodes: list[TreeNode]
+    ) -> None:
         first_node = nodes[0]
         last_node = nodes[-1]
 
@@ -92,16 +98,24 @@ class DirectedRootedTreeGrouper:
                     1 for node in nodes if node.dimensions_data["quality"]["is_rework"] == "Yes"
                 )
 
-                grouped_data["is_rework"] = f"{qty_of_reworked_activities} reworked activities in group"
+                grouped_data["is_rework"] = (
+                    f"{qty_of_reworked_activities} reworked activities in group"
+                )
 
             if dimension == "flexibility":
                 qty_of_optional_activities = sum(
-                    1 for node in nodes if node.dimensions_data["flexibility"]["is_optional"] == "Yes"
+                    1
+                    for node in nodes
+                    if node.dimensions_data["flexibility"]["is_optional"] == "Yes"
                 )
 
-                grouped_data["is_optional"] = f"{qty_of_optional_activities} optional activities in group"
+                grouped_data["is_optional"] = (
+                    f"{qty_of_optional_activities} optional activities in group"
+                )
 
-    def group_time_dimension_in_new_node(self, grouped_node: TreeNode, nodes: list[TreeNode]) -> None:
+    def group_time_dimension_in_new_node(
+        self, grouped_node: TreeNode, nodes: list[TreeNode]
+    ) -> None:
         first_node = nodes[0]
         last_node = nodes[-1]
 
@@ -114,8 +128,12 @@ class DirectedRootedTreeGrouper:
         grouped_data["min"] = self.calculate_min(nodes, "time")
         grouped_data["max"] = self.calculate_max(nodes, "time")
 
-        grouped_data["service"] = sum([node.dimensions_data["time"]["service"] for node in nodes], timedelta())
-        grouped_data["waiting"] = sum([node.dimensions_data["time"]["waiting"] for node in nodes], timedelta())
+        grouped_data["service"] = sum(
+            [node.dimensions_data["time"]["service"] for node in nodes], timedelta()
+        )
+        grouped_data["waiting"] = sum(
+            [node.dimensions_data["time"]["waiting"] for node in nodes], timedelta()
+        )
 
     def calculate_total(self, nodes: list[TreeNode], dimension: str) -> int | float | timedelta:
         if dimension == "time":

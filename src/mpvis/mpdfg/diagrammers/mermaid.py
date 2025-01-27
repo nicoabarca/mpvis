@@ -89,7 +89,7 @@ class MermaidDiagrammer:
             color = background_color(
                 frequency, "frequency", self.dimensions_min_and_max["frequency"]
             ).replace("#", "")
-            connection_string = f"start -.\"<span style='background-color: white; color: {color};'>{'{0:,}'.format(frequency) if self.visualize_frequency else ''}</span>\".- {self.activities_id[activity]}\n"
+            connection_string = f"start -.\"<span style='background-color: white; color: {color};'>{f'{frequency:,}' if self.visualize_frequency else ''}</span>\".- {self.activities_id[activity]}\n"
             start_connections_string += connection_string
 
             self.link_styles_string += f"linkStyle {self.links_counter} stroke-width: {link_width(frequency, self.dimensions_min_and_max['frequency'])}px;\n"
@@ -102,7 +102,7 @@ class MermaidDiagrammer:
             color = background_color(
                 frequency, "frequency", self.dimensions_min_and_max["frequency"]
             ).replace("#", "")
-            connections_string = f"{self.activities_id[activity]} -.\"<span style='background-color: white; color: {color};'>{'{0:,}'.format(frequency) if self.visualize_frequency else ''}</span>\".- complete\n"
+            connections_string = f"{self.activities_id[activity]} -.\"<span style='background-color: white; color: {color};'>{f'{frequency:,}' if self.visualize_frequency else ''}</span>\".- complete\n"
             end_connections_string += connections_string
 
             self.link_styles_string += f"linkStyle {self.links_counter} stroke-width: {link_width(frequency, self.dimensions_min_and_max['frequency'])}px;\n"
@@ -148,10 +148,10 @@ class MermaidDiagrammer:
         color = background_color(
             dimension_measure, dimension, self.dimensions_min_and_max[dimension]
         ).replace("#", "")
-        html_string = "<span style='background-color: white; color: {};'>{}</span></br>"
+        html_string = "<span style='background-color: white; color: {};'>{}</span><br/>"
         content = None
         if dimension == "frequency" and self.visualize_frequency:
-            content = "{0:,}".format(dimension_measure)
+            content = f"{dimension_measure:,}"
             html_string = html_string.format(color, content)
         if dimension == "time" and self.visualize_time:
             content = format_time(dimension_measure)
@@ -171,7 +171,7 @@ class MermaidDiagrammer:
         return activity_name
 
     def frequency_measure(self, dimension_measure):
-        return "(" + "{0:,}".format(dimension_measure) + ")" if self.visualize_frequency else ""
+        return "(" + f"{dimension_measure:,}" + ")" if self.visualize_frequency else ""
 
     def get_diagram_string(self):
         return self.diagram_string

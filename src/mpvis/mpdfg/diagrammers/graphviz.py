@@ -102,16 +102,14 @@ class GraphVizDiagrammer:
             bgcolor = bgcolor if self.visualize_frequency else "royalblue"
             activity_name = self.build_activity_name(activity)
             content = (
-                f"{activity_name} ({'{0:,}'.format(measure)})"
-                if self.visualize_frequency
-                else activity_name
+                f"{activity_name} ({f'{measure:,}'})" if self.visualize_frequency else activity_name
             )
 
         elif dimension == "time" and self.visualize_time:
             content = format_time(measure)
 
         elif dimension == "cost" and self.visualize_cost:
-            content = f"{'{0:,}'.format(measure)} {self.cost_currency}"
+            content = f"{f'{measure:,}'} {self.cost_currency}"
 
         return bgcolor, content
 
@@ -182,7 +180,7 @@ class GraphVizDiagrammer:
         bgcolor = background_color(measure, dimension, self.dimensions_min_and_max[dimension])
         content = ""
         if dimension == "frequency":
-            content = "{0:,}".format(measure) if self.visualize_frequency else content
+            content = f"{measure:,}" if self.visualize_frequency else content
         elif dimension == "time" and self.visualize_time:
             content = format_time(measure)
 
@@ -197,6 +195,8 @@ class GraphVizDiagrammer:
             activity_name = activity_name.replace(">", "&gt;")
         if "=" in activity_name:
             activity_name = activity_name.replace("=", "&#61;")
+        if "&lt;br/&gt;" in activity_name:
+            activity_name = activity_name.replace("&lt;br/&gt;", "<br/>")
 
         return activity_name
 

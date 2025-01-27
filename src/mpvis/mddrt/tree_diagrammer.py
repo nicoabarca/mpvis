@@ -168,7 +168,7 @@ class DirectlyRootedTreeDiagrammer:
         minimum = self.format_value("min", dimension, node)
         link_row = f"{'Service' if dimension == 'time' else ''} {dimension.capitalize()}<br/>"
         link_row += f"Avg: {avg_total}<br/>" if "avg" in self.arc_measures else ""
-        if dimension  in ["time", "cost"]:
+        if dimension in ["time", "cost"]:
             link_row += f"Max: {maximum}<br/>" if "max" in self.arc_measures else ""
             link_row += f"Min: {minimum}<br/>" if "min" in self.arc_measures else ""
         elif dimension == "flexibility":
@@ -187,7 +187,9 @@ class DirectlyRootedTreeDiagrammer:
         value = self.get_dimension_metric_value(node, metric, dimension)
         return self.format_by_dimension(value, dimension)
 
-    def get_dimension_metric_value(self, node: TreeNode, metric: METRIC, dimension: str) -> int | float | timedelta:
+    def get_dimension_metric_value(
+        self, node: TreeNode, metric: METRIC, dimension: str
+    ) -> int | float | timedelta:
         if metric in ["max", "min"]:
             return node.dimensions_data[dimension][metric]
         return node.dimensions_data[dimension][metric] / node.frequency
@@ -196,7 +198,7 @@ class DirectlyRootedTreeDiagrammer:
         if dimension == "time":
             return format_time(value)
         if dimension == "cost":
-            return f"{abs(round(value,2))} USD"
+            return f"{abs(round(value, 2))} USD"
         return str(abs(round(value, 2)))
 
     def build_activity_link_name(self, node: TreeNode):
@@ -204,20 +206,28 @@ class DirectlyRootedTreeDiagrammer:
         if "&" in node_name:
             node_name = node_name.replace("&", "&amp;")
         if "<" in node_name:
-            node_name = node_name.replace("<", "&lt")
+            node_name = node_name.replace("<", "&lt;")
         if ">" in node_name:
-            node_name = node_name.replace(">", "&gt")
+            node_name = node_name.replace(">", "&gt;")
         if "=" in node_name:
             node_name = node_name.replace("=", "&#61;")
-        if "&lt/br&gt" in node_name:    
-            node_name = node_name.replace("&lt/br&gt", "<br/>")
+        if "&lt;br/&gt;" in node_name:
+            node_name = node_name.replace("&lt;br/&gt;", "<br/>")
 
         return f"{node_name} ({node.frequency})"
 
     def build_dimension_row_string(self, dimension: str, metric: str) -> str:
         metric_string_mapper = {
-            "time": {"total": "Lead Time", "consumed": "Consumed Time", "remaining": "Remaining Time"},
-            "cost": {"total": "Total Cost", "consumed": "Consumed Cost", "remaining": "Remaining Cost"},
+            "time": {
+                "total": "Lead Time",
+                "consumed": "Consumed Time",
+                "remaining": "Remaining Time",
+            },
+            "cost": {
+                "total": "Total Cost",
+                "consumed": "Consumed Cost",
+                "remaining": "Remaining Cost",
+            },
             "flexibility": {
                 "total": "Total Optional Activity Count",
                 "consumed": "Accumulated Optional Activity Count",

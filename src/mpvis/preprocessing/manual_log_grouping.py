@@ -14,7 +14,7 @@ class ManualLogGrouping:
         self,
         log: pd.DataFrame,
         activities_to_group: list[str],
-        group_name: str,
+        group_name: str | None = None,
         case_id_key: str = "case:concept:name",
         activity_id_key: str = "concept:name",
         start_timestamp_key: str | None = "start_timestamp",
@@ -87,10 +87,19 @@ class ManualLogGrouping:
     def merge_activities(self, base_activity: pd.Series, incoming_activity: pd.Series) -> pd.Series:
         activity_data = []
         for column_name in self.log_columns:
-            if column_name in [self.case_id_key, self.activity_id_key, self.start_timestamp_key, self.timestamp_key]:
-                value = self.merge_value_based_on_column_name(column_name, base_activity, incoming_activity)
+            if column_name in [
+                self.case_id_key,
+                self.activity_id_key,
+                self.start_timestamp_key,
+                self.timestamp_key,
+            ]:
+                value = self.merge_value_based_on_column_name(
+                    column_name, base_activity, incoming_activity
+                )
             else:
-                value = self.merge_value_based_on_data_type(column_name, base_activity, incoming_activity)
+                value = self.merge_value_based_on_data_type(
+                    column_name, base_activity, incoming_activity
+                )
             activity_data.append(value)
         merged_activities_data = pd.Series(activity_data, index=base_activity.index.tolist())
         self.grouped_log[str(self.actual_activities_grouping_index)] = merged_activities_data
@@ -118,7 +127,9 @@ class ManualLogGrouping:
         if column_name == self.activity_id_key:
             return self.group_name
         if column_name == self.start_timestamp_key:
-            return min(base_activity[self.start_timestamp_key], incoming_activity[self.start_timestamp_key])
+            return min(
+                base_activity[self.start_timestamp_key], incoming_activity[self.start_timestamp_key]
+            )
         return max(base_activity[self.timestamp_key], incoming_activity[self.timestamp_key])
 
     def merge_value_based_on_data_type(
@@ -126,10 +137,6 @@ class ManualLogGrouping:
     ) -> float | int | str | timedelta:
         base_value = base_activity[column_name]
         incoming_value = incoming_activity[column_name]
-
-        # if not self.can_be_summed(base_value, incoming_value):
-        #     error_message = f"Incompatible types for addition: cannot sum {base_value} ({type(base_value).__name__}) and {incoming_value} ({type(incoming_value).__name__}). Ensure that the data types are compatible."
-        #     raise ValueError(error_message)
 
         if (
             pd.api.types.is_integer(base_value)
@@ -149,12 +156,6 @@ class ManualLogGrouping:
             return f"{base_value}-{incoming_value}"
         error_message = f"Unsupported data type: {type(base_value).__name__}. Try convert it before manual grouping"
         raise TypeError(error_message)
-
-    def can_be_summed(self, base_value, incoming_value):
-        try:
-            base_value + incoming_value
-        except TypeError:
-            return False
 
     def get_grouped_log(self) -> pd.DataFrame:
         return pd.DataFrame.from_dict(self.grouped_log, orient="index")
@@ -196,6 +197,12 @@ def manual_log_grouping(
 
     """
     manual_log_grouping = ManualLogGrouping(
-        log, activities_to_group, group_name, case_id_key, activity_id_key, start_timestamp_key, timestamp_key
+        log,
+        activities_to_group,
+        group_name,
+        case_id_key,
+        activity_id_key,
+        start_timestamp_key,
+        timestamp_key,
     )
     return manual_log_grouping.get_grouped_log()
