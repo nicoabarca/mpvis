@@ -128,8 +128,6 @@ Filters activities of a multi-perspective Directly-Follows Graph (DFG) diagram.
 ```py
 from mpvis import mpdfg
 
-from mpvis import mpdfg
-
 activities_filtered_multi_perspective_dfg = mpdfg.filter_multi_perspective_dfg_activities(
     percentage=0.5,
     dfg=multi_perspective_dfg,
