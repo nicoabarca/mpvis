@@ -91,8 +91,10 @@ def filter_dfg_activity(activities, paths, start_activities, end_activities):
     return activities, paths, True
 
 def filter_dfg_activities(percentage, dfg, start_activities, end_activities, sort_by = "frequency", ascending = True):
-    remaining_activities = dict(sorted(dfg["activities"].items(), key = lambda activity: activity[1][sort_by], reverse = not ascending))
-    remaining_paths = dfg["connections"]
+    dfg_copy = dfg.copy(deep = True)
+    
+    remaining_activities = dict(sorted(dfg_copy["activities"].items(), key = lambda activity: activity[1][sort_by], reverse = not ascending))
+    remaining_paths = dfg_copy["connections"]
 
     activities_to_filter = int(len(remaining_activities) - round(len(remaining_activities) * percentage / 100, 0))
 
@@ -103,10 +105,10 @@ def filter_dfg_activities(percentage, dfg, start_activities, end_activities, sor
         if end_reached:
             break
 
-    dfg["activities"] = remaining_activities
-    dfg["connections"] = remaining_paths
+    dfg_copy["activities"] = remaining_activities
+    dfg_copy["connections"] = remaining_paths
 
-    return dfg
+    return dfg_copy
 
 def filter_dfg_cycles(dfg):
     filtered_paths = {}
@@ -148,7 +150,9 @@ def filter_dfg_path(filtered_paths, remaining_paths, start_activities, end_activ
     return filtered_paths, remaining_paths, True, checked_paths
 
 def filter_dfg_paths(percentage, dfg, start_activities, end_activities, sort_by = "frequency", ascending = True):
-    filtered_paths, remaining_paths = filter_dfg_cycles(dfg)
+    dfg_copy = dfg.copy(deep = True)
+    
+    filtered_paths, remaining_paths = filter_dfg_cycles(dfg_copy)
 
     remaining_paths = dict(sorted(remaining_paths.items(), key = lambda path: path[1][sort_by], reverse = not ascending))
 
@@ -169,6 +173,6 @@ def filter_dfg_paths(percentage, dfg, start_activities, end_activities, sort_by 
             if i >= paths_to_include:
                 break
 
-    dfg["connections"] = remaining_paths
+    dfg_copy["connections"] = remaining_paths
 
-    return dfg
+    return dfg_copy
