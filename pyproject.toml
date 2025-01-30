@@ -1,6 +1,6 @@
 [project]
 name = "mpvis"
-version = "0.0.5"
+version = "0.0.6"
 dependencies = ["pandas", "numpy", "pyarrow", "graphviz", "tqdm", "pm4py"]
 description = "Package for Multi-Perspective Process Visualization"
 readme = "README.md"
