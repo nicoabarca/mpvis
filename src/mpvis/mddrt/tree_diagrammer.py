@@ -148,8 +148,9 @@ class DirectlyRootedTreeDiagrammer:
     def build_link_label(self, node: TreeNode) -> str:
         node_name = self.build_activity_link_name(node)
         content = GRAPHVIZ_ACTIVITY_DATA.format(node_name)
-        for dimension in self.dimensions_to_diagram:
-            content += self.build_link_string(dimension, node)
+        if len(self.arc_measures) > 0:
+            for dimension in self.dimensions_to_diagram:
+                content += self.build_link_string(dimension, node)
         return GRAPHVIZ_ACTIVITY.format(content)
 
     def build_link_string(
@@ -167,8 +168,8 @@ class DirectlyRootedTreeDiagrammer:
         maximum = self.format_value("max", dimension, node)
         minimum = self.format_value("min", dimension, node)
         link_row = f"{'Service' if dimension == 'time' else ''} {dimension.capitalize()}<br/>"
-        link_row += f"Avg: {avg_total}<br/>" if "avg" in self.arc_measures else ""
         if dimension in ["time", "cost"]:
+            link_row += f"Avg: {avg_total}<br/>" if "avg" in self.arc_measures else ""
             link_row += f"Max: {maximum}<br/>" if "max" in self.arc_measures else ""
             link_row += f"Min: {minimum}<br/>" if "min" in self.arc_measures else ""
         elif dimension == "flexibility":
