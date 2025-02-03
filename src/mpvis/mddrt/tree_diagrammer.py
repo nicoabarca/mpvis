@@ -158,7 +158,9 @@ class DirectlyRootedTreeDiagrammer:
         dimension: Literal["cost", "time", "flexibility", "quality"],
         node: TreeNode,
     ) -> str:
-        if len(self.arc_measures) == 0:
+        if len(self.arc_measures) == 0 or not any(
+            item in ["avg", "max", "min"] for item in self.arc_measures
+        ):
             return " "
         avg_total = (
             self.format_value("total", dimension, node)
