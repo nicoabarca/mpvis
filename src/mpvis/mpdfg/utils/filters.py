@@ -1,3 +1,5 @@
+import copy
+
 def try_to_reach(source, target, skip_path, paths, visited_already, sound_activities, followed_path):
     followed_path.append(target)
     if (source, target) == skip_path:
@@ -91,7 +93,7 @@ def filter_dfg_activity(activities, paths, start_activities, end_activities):
     return activities, paths, True
 
 def filter_dfg_activities(percentage, dfg, start_activities, end_activities, sort_by = "frequency", ascending = True):
-    dfg_copy = dfg.copy(deep = True)
+    dfg_copy = copy.deepcopy(dfg)
     
     remaining_activities = dict(sorted(dfg_copy["activities"].items(), key = lambda activity: activity[1][sort_by], reverse = not ascending))
     remaining_paths = dfg_copy["connections"]
@@ -150,7 +152,7 @@ def filter_dfg_path(filtered_paths, remaining_paths, start_activities, end_activ
     return filtered_paths, remaining_paths, True, checked_paths
 
 def filter_dfg_paths(percentage, dfg, start_activities, end_activities, sort_by = "frequency", ascending = True):
-    dfg_copy = dfg.copy(deep = True)
+    dfg_copy = copy.deepcopy(dfg)
     
     filtered_paths, remaining_paths = filter_dfg_cycles(dfg_copy)
 
