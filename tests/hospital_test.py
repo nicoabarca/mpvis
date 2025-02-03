@@ -4,6 +4,8 @@ import pandas as pd
 
 import mpvis
 
+# LivingLabHospital_Interpreted Location event logs.csv
+
 event_log_path = os.path.join(
     os.path.dirname(__file__), "data", "LivingLabHospital_Interpreted Location event logs.csv"
 )
@@ -25,10 +27,9 @@ processed_log = mpvis.preprocessing.manual_log_grouping(
     processed_log, activities_to_group=["Registration (Priorities)", "Waiting Room Reception"]
 )
 
-drt = mpvis.mddrt.discover_multi_dimensional_drt(processed_log)
 
-mpvis.mddrt.save_vis_multi_dimensional_drt(drt, file_path="hospital_drt")
+processed_log = mpvis.preprocessing.manual_log_grouping(
+    processed_log, activities_to_group=["Registration (normal)", "Waiting Room Reception"]
+)
 
-# processed_log = mpvis.preprocessing.manual_log_grouping(
-#     processed_log, activities_to_group=["Registration (normal)", "Waiting Room Reception"]
-# )
+processed_log.to_csv("hospital_grouped_big.csv", index=False)

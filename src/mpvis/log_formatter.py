@@ -4,7 +4,8 @@ import pandas as pd
 
 
 def log_formatter(log: pd.DataFrame, log_format: dict, timestamp_format: str | None = None):
-    """Format the log DataFrame based on the provided format dictionary.
+    """
+    Format the log DataFrame based on the provided format dictionary.
 
     Args:
         log (pd.DataFrame): The log DataFrame to be formatted.
@@ -34,12 +35,14 @@ def log_formatter(log: pd.DataFrame, log_format: dict, timestamp_format: str | N
         log = log.rename(columns={log_format["cost:total"]: "cost:total"})
 
     if "org:resource" not in log_format or log_format["org:resource"] == "":
-        log["org:resoure"] = ""
+        log["org:resource"] = ""
     else:
         log = log.rename(columns={log_format["org:resource"]: "org:resource"})
 
     log["time:timestamp"] = pd.to_datetime(log["time:timestamp"], utc=True, format=timestamp_format)
-    log["start_timestamp"] = pd.to_datetime(log["start_timestamp"], utc=True, format=timestamp_format)
+    log["start_timestamp"] = pd.to_datetime(
+        log["start_timestamp"], utc=True, format=timestamp_format
+    )
 
     log["case:concept:name"] = log["case:concept:name"].astype(str)
     return log

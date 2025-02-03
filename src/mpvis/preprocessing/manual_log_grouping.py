@@ -56,7 +56,7 @@ class ManualLogGrouping:
                 self.log[col] = self.log[col].astype(str)
 
     def group(self) -> None:
-        cases_grouped_by_id = self.log.groupby(self.case_id_key, dropna=True, sort=False)
+        cases_grouped_by_id = self.log.groupby(self.case_id_key, dropna=False, sort=False)
         print("Manual log grouping:")
         for _, actual_case in tqdm(cases_grouped_by_id):
             self.iterate_case_rows(actual_case)
@@ -69,6 +69,8 @@ class ManualLogGrouping:
                 self.group_activities(row)
             else:
                 self.add_activity_to_log(row)
+
+        self.activities_left_to_be_grouped = self.activities_to_group.copy()
 
     def group_activities(self, incoming_activity: pd.Series) -> None:
         if self.is_activities_left_to_be_grouped_full():
