@@ -286,4 +286,4 @@ mddrt.save_vis_multi_dimensional_drt(
 
 # Examples
 
-Checkout [Examples](https://github.com/nicoabarca/mpvis/tree/main/examples)) to see the package being used to visualize an event log of a mining process.
+Checkout [Examples](https://github.com/nicoabarca/mpvis/tree/main/examples) to see the package being used to visualize an event log of a mining process.
