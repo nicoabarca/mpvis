@@ -17,17 +17,21 @@ if TYPE_CHECKING:
 
 
 def dimensions_min_and_max(tree_root: TreeNode) -> dict[str, list[int]]:
-    dimensions_min_and_max = {"frequency": [0, 0]}
+    dimensions_min_and_max = {"frequency": [float("inf"), 0]}
     for dimension in tree_root.dimensions_data:
-        dimensions_min_and_max[dimension] = [0, 0]
+        dimensions_min_and_max[dimension] = [float("inf"), 0]
 
     queue = deque([tree_root])
 
     while queue:
         current_node = queue.popleft()
 
-        dimensions_min_and_max["frequency"][0] = min(dimensions_min_and_max["frequency"][0], current_node.frequency)
-        dimensions_min_and_max["frequency"][1] = max(dimensions_min_and_max["frequency"][1], current_node.frequency)
+        dimensions_min_and_max["frequency"][0] = min(
+            dimensions_min_and_max["frequency"][0], current_node.frequency
+        )
+        dimensions_min_and_max["frequency"][1] = max(
+            dimensions_min_and_max["frequency"][1], current_node.frequency
+        )
 
         for dimension, data in current_node.dimensions_data.items():
             dimension_avg_total_case = (
@@ -35,8 +39,12 @@ def dimensions_min_and_max(tree_root: TreeNode) -> dict[str, list[int]]:
                 if dimension != "time"
                 else (data["lead_case"] / current_node.frequency).total_seconds()
             )
-            dimensions_min_and_max[dimension][0] = min(dimensions_min_and_max[dimension][0], dimension_avg_total_case)
-            dimensions_min_and_max[dimension][1] = max(dimensions_min_and_max[dimension][1], dimension_avg_total_case)
+            dimensions_min_and_max[dimension][0] = min(
+                dimensions_min_and_max[dimension][0], dimension_avg_total_case
+            )
+            dimensions_min_and_max[dimension][1] = max(
+                dimensions_min_and_max[dimension][1], dimension_avg_total_case
+            )
 
         for child in current_node.children:
             queue.append(child)
@@ -65,7 +73,9 @@ def interpolated_value(measure: int, from_scale: tuple[int, int], to_scale: tupl
     return round(interpolated_value)
 
 
-def color_scheme_by_dimension(dimension: Literal["frequency", "cost", "time", "flexibility", "quality"]) -> list[str]:
+def color_scheme_by_dimension(
+    dimension: Literal["frequency", "cost", "time", "flexibility", "quality"],
+) -> list[str]:
     dimension_color_schemes = {
         "frequency": FREQUENCY_COLOR_SCHEME,
         "cost": COST_COLOR_SCHEME,
