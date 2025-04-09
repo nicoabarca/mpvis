@@ -31,6 +31,7 @@ class DirectlyRootedTreeBuilder:
         self.build_cases(cases_grouped_by_id)
         self.build_tree()
         self.update_root()
+        self.order_tree_by_frequency()
 
     def build_cases(self, cases_grouped_by_id: DataFrameGroupBy) -> None:
         cases = {}
@@ -42,10 +43,17 @@ class DirectlyRootedTreeBuilder:
             case_activities = self.build_case_activities(case)
             case_metrics = cases_metrics.loc[cases_metrics["Case Id"] == case_id].iloc[0]
             cases[case_id]["activities"] = case_activities
-            metrics_mapping = {"cost": "Cost", "time": "Duration", "flexibility": "Optionality", "quality": "Rework"}
+            metrics_mapping = {
+                "cost": "Cost",
+                "time": "Duration",
+                "flexibility": "Optionality",
+                "quality": "Rework",
+            }
             for dimension in self.dimensions_to_calculate:
                 if dimension == "time":
-                    cases[case_id][dimension] = case_metrics[metrics_mapping[dimension]].to_pytimedelta()
+                    cases[case_id][dimension] = case_metrics[
+                        metrics_mapping[dimension]
+                    ].to_pytimedelta()
                 else:
                     cases[case_id][dimension] = case_metrics[metrics_mapping[dimension]]
 
@@ -70,13 +78,15 @@ class DirectlyRootedTreeBuilder:
     def calculate_time_data(self, case_df: pd.DataFrame, index: int) -> dict[str, timedelta]:
         actual_activity = case_df.iloc[index]
         service_time = (
-            actual_activity[self.params.timestamp_key] - actual_activity[self.params.start_timestamp_key]
+            actual_activity[self.params.timestamp_key]
+            - actual_activity[self.params.start_timestamp_key]
         ).to_pytimedelta()
 
         prev_activity = case_df.iloc[index - 1] if index > 0 else None
         waiting_time = (
             (
-                actual_activity[self.params.start_timestamp_key] - prev_activity[self.params.timestamp_key]
+                actual_activity[self.params.start_timestamp_key]
+                - prev_activity[self.params.timestamp_key]
             ).to_pytimedelta()
             if prev_activity is not None
             else timedelta(0)
@@ -136,7 +146,9 @@ class DirectlyRootedTreeBuilder:
         self.tree.dimensions_data["time"]["min"] = min(
             node.dimensions_data["time"]["min"] for node in self.tree.children
         )
-        self.tree.dimensions_data["time"]["lead_remainder"] = self.tree.dimensions_data["time"]["lead_case"]
+        self.tree.dimensions_data["time"]["lead_remainder"] = self.tree.dimensions_data["time"][
+            "lead_case"
+        ]
 
     def update_root_cost_flexibility_quality_dimension(self, dimension: str) -> None:
         self.tree.dimensions_data[dimension]["total"] = sum(
@@ -151,7 +163,12 @@ class DirectlyRootedTreeBuilder:
         self.tree.dimensions_data[dimension]["min"] = min(
             node.dimensions_data[dimension]["min"] for node in self.tree.children
         )
-        self.tree.dimensions_data[dimension]["remainder"] = self.tree.dimensions_data[dimension]["total_case"]
+        self.tree.dimensions_data[dimension]["remainder"] = self.tree.dimensions_data[dimension][
+            "total_case"
+        ]
+
+    def order_tree_by_frequency(self) -> None:
+        self.tree.sort_by_frequency()
 
     def get_tree(self) -> TreeNode:
         if not self.tree:

@@ -19,7 +19,9 @@ class TreeNode:
         self.name: str = name
         self.depth: int = depth
         self.frequency: int = 0
-        self.dimensions_data: dict[Literal["cost", "time", "flexibility", "quality"], dict] = create_dimensions_data()
+        self.dimensions_data: dict[Literal["cost", "time", "flexibility", "quality"], dict] = (
+            create_dimensions_data()
+        )
         self.parent: TreeNode = None
         self.children: list[TreeNode] = []
         TreeNode.id += 1
@@ -71,14 +73,20 @@ class TreeNode:
         activity_cost = current_case["activities"][depth]["cost"]
         cost_cumsum = activities_dimension_cumsum(current_case, "cost")
 
-        self.update_cumulative_data(dimension_data, activity_cost, cost_cumsum[depth], current_case["cost"])
+        self.update_cumulative_data(
+            dimension_data, activity_cost, cost_cumsum[depth], current_case["cost"]
+        )
         self.update_min_max(dimension_data, activity_cost)
 
     def update_quality_dimension(self, depth: int, current_case: dict) -> None:
         dimension_data = self.dimensions_data["quality"]
-        activities_till_depth = [activity["name"] for activity in current_case["activities"]][: depth + 1]
+        activities_till_depth = [activity["name"] for activity in current_case["activities"]][
+            : depth + 1
+        ]
         accumulated_rework = len(activities_till_depth) - len(set(activities_till_depth))
-        self.update_cumulative_data(dimension_data, accumulated_rework, accumulated_rework, current_case["quality"])
+        self.update_cumulative_data(
+            dimension_data, accumulated_rework, accumulated_rework, current_case["quality"]
+        )
         self.set_rework_status(current_case["activities"])
 
     def update_flexibility_dimension(self, depth: int, current_case: dict) -> None:
@@ -88,7 +96,10 @@ class TreeNode:
         activities_till_depth = case_activities[: depth + 1]
         accumulated_optionality = len(set(activities_till_depth) & set(optional_activities))
         self.update_cumulative_data(
-            dimension_data, accumulated_optionality, accumulated_optionality, current_case["flexibility"]
+            dimension_data,
+            accumulated_optionality,
+            accumulated_optionality,
+            current_case["flexibility"],
         )
         self.set_optional_status(optional_activities)
 
@@ -139,6 +150,11 @@ class TreeNode:
             return new_node
 
         return copy_node(self)
+
+    def sort_by_frequency(self):
+        self.children.sort(key=lambda node: node.frequency)
+        for child in self.children:
+            child.sort_by_frequency()
 
     def __str__(self) -> str:
         return f"""
