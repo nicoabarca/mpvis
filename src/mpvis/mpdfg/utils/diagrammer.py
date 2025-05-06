@@ -1,37 +1,35 @@
 from datetime import timedelta
+
 from mpvis.mpdfg.utils.color_scales import (
-    TIME_COLOR_SCALE,
-    FREQUENCY_COLOR_SCALE,
     COST_COLOR_SCALE,
+    FREQUENCY_COLOR_SCALE,
+    TIME_COLOR_SCALE,
 )
 
 
-def dimensions_min_and_max(activities, connections):
+def dimensions_min_and_max(activities, connections) -> tuple[dict, dict]:
     activities_dimensions = next(iter(activities.values())).keys()
     connections_dimensions = next(iter(connections.values())).keys()
-    dimensions_min_and_max = {key: (0, 0) for key in activities_dimensions}
+    activities_dimensions_min_and_max = {key: (float("inf"), 0) for key in activities_dimensions}
+    connections_dimensions_min_and_max = {key: (float("inf"), 0) for key in connections_dimensions}
 
     for dim in activities_dimensions:
-        min_val = min((activity[dim] for activity in activities.values()))
-        max_val = max((activity[dim] for activity in activities.values()))
-        dimensions_min_and_max[dim] = (min_val, max_val)
+        min_val = min(activity[dim] for activity in activities.values())
+        max_val = max(activity[dim] for activity in activities.values())
+        activities_dimensions_min_and_max[dim] = (max(min_val, 0), max_val)
 
     for dim in connections_dimensions:
-        min_val = min((connection[dim] for connection in connections.values()))
-        max_val = max((connection[dim] for connection in connections.values()))
-        prev_min_val = dimensions_min_and_max[dim][0]
-        prev_max_val = dimensions_min_and_max[dim][1]
-        dimensions_min_and_max[dim] = (min(prev_min_val, min_val), max(prev_max_val, max_val))
+        min_val = min(connection[dim] for connection in connections.values())
+        max_val = max(connection[dim] for connection in connections.values())
+        connections_dimensions_min_and_max[dim] = (max(min_val, 0), max_val)
 
-    return dimensions_min_and_max
+    return activities_dimensions_min_and_max, connections_dimensions_min_and_max
 
 
 def ids_mapping(activities):
-    id = 0
     mapping = {}
-    for activity in activities.keys():
-        mapping[activity] = f"A{id}"
-        id += 1
+    for idx, activity in enumerate(activities):
+        mapping[activity] = f"A{idx}"
 
     return mapping
 
@@ -46,10 +44,9 @@ def background_color(measure, dimension, dimension_scale):
 def color_palette_by_dimension(dimension):
     if dimension == "frequency":
         return FREQUENCY_COLOR_SCALE
-    elif dimension == "cost":
+    if dimension == "cost":
         return COST_COLOR_SCALE
-    else:
-        return TIME_COLOR_SCALE
+    return TIME_COLOR_SCALE
 
 
 def interpolated_value(measure, from_scale, to_scale):
@@ -70,17 +67,17 @@ def format_time(total_seconds):
     seconds = round(delta.seconds % 60)
 
     if years > 0:
-        return "{:02d}y {:02d}m {:02d}d ".format(years, months, days)
+        return f"{years:02d}y {months:02d}m {days:02d}d "
     if months > 0:
-        return "{:02d}m {:02d}d {:02d}h ".format(months, days, hours)
+        return f"{months:02d}m {days:02d}d {hours:02d}h "
     if days > 0:
-        return "{:02d}d {:02d}h {:02d}m ".format(days, hours, minutes)
+        return f"{days:02d}d {hours:02d}h {minutes:02d}m "
     if hours > 0:
-        return "{:02d}h {:02d}m {:02d}s ".format(hours, minutes, seconds)
+        return f"{hours:02d}h {minutes:02d}m {seconds:02d}s "
     if minutes > 0:
-        return "{:02d}m {:02d}s".format(minutes, seconds)
+        return f"{minutes:02d}m {seconds:02d}s"
     if seconds > 0:
-        return "{:02d}s".format(seconds)
+        return f"{seconds:02d}s"
     return "Instant"
 
 

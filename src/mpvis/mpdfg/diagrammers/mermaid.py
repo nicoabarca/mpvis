@@ -31,7 +31,8 @@ class MermaidDiagrammer:
         self.links_counter = 0
         self.link_styles_string = ""
         self.activities_id = {}
-        self.dimensions_min_and_max = {}
+        self.activities_dimensions_min_and_max = {}
+        self.connections_dimensions_min_and_max = {}
         self.set_activities_ids_mapping()
         self.set_dimensions_min_and_max()
 
@@ -39,8 +40,8 @@ class MermaidDiagrammer:
         self.activities_id = ids_mapping(self.dfg["activities"])
 
     def set_dimensions_min_and_max(self):
-        self.dimensions_min_and_max = dimensions_min_and_max(
-            self.dfg["activities"], self.dfg["connections"]
+        self.activities_dimensions_min_and_max, self.connections_dimensions_min_and_max = (
+            dimensions_min_and_max(self.dfg["activities"], self.dfg["connections"])
         )
 
     def build_diagram(self):
@@ -76,7 +77,7 @@ class MermaidDiagrammer:
                 dimension_measure = self.dfg["connections"][connection][dimension]
                 connections_string += self.build_connection_string(dimension, dimension_measure)
                 if dimension == "frequency":
-                    self.link_styles_string += f"linkStyle {self.links_counter} stroke-width: {link_width(dimension_measure, self.dimensions_min_and_max['frequency'])}px;\n"
+                    self.link_styles_string += f"linkStyle {self.links_counter} stroke-width: {link_width(dimension_measure, self.activities_dimensions_min_and_max['frequency'])}px;\n"
                     self.links_counter += 1
 
             self.diagram_string += f'{self.activities_id[connection[0]]}-->|"{connections_string}"|{self.activities_id[connection[1]]}\n'
@@ -87,12 +88,12 @@ class MermaidDiagrammer:
         start_connections_string = ""
         for activity, frequency in self.start_activities.items():
             color = background_color(
-                frequency, "frequency", self.dimensions_min_and_max["frequency"]
+                frequency, "frequency", self.connections_dimensions_min_and_max["frequency"]
             ).replace("#", "")
             connection_string = f"start -.\"<span style='background-color: white; color: {color};'>{f'{frequency:,}' if self.visualize_frequency else ''}</span>\".- {self.activities_id[activity]}\n"
             start_connections_string += connection_string
 
-            self.link_styles_string += f"linkStyle {self.links_counter} stroke-width: {link_width(frequency, self.dimensions_min_and_max['frequency'])}px;\n"
+            self.link_styles_string += f"linkStyle {self.links_counter} stroke-width: {link_width(frequency, self.connections_dimensions_min_and_max['frequency'])}px;\n"
             self.links_counter += 1
         self.diagram_string += start_connections_string
 
@@ -100,7 +101,7 @@ class MermaidDiagrammer:
         end_connections_string = ""
         for activity, frequency in self.end_activities.items():
             color = background_color(
-                frequency, "frequency", self.dimensions_min_and_max["frequency"]
+                frequency, "frequency", self.connections_dimensions_min_and_max["frequency"]
             ).replace("#", "")
             connections_string = f"{self.activities_id[activity]} -.\"<span style='background-color: white; color: {color};'>{f'{frequency:,}' if self.visualize_frequency else ''}</span>\".- complete\n"
             end_connections_string += connections_string
@@ -127,7 +128,7 @@ class MermaidDiagrammer:
 
     def activity_dimension_string(self, activity, dimension, dimension_measure):
         color = background_color(
-            dimension_measure, dimension, self.dimensions_min_and_max[dimension]
+            dimension_measure, dimension, self.activities_dimensions_min_and_max[dimension]
         ).replace("#", "")
         html_string = "<div style='background-color: {}; color: white; padding: 5px; border-bottom: 1px solid black;'>&nbsp;{}&nbsp;</div>"
         content = None
@@ -146,7 +147,7 @@ class MermaidDiagrammer:
 
     def build_connection_string(self, dimension, dimension_measure):
         color = background_color(
-            dimension_measure, dimension, self.dimensions_min_and_max[dimension]
+            dimension_measure, dimension, self.connections_dimensions_min_and_max[dimension]
         ).replace("#", "")
         html_string = "<span style='background-color: white; color: {};'>{}</span><br/>"
         content = None

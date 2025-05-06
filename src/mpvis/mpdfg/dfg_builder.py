@@ -1,8 +1,8 @@
 from mpvis.mpdfg.utils.builder import (
     new_activity_dict,
     new_connection_dict,
-    statistics_names_mapping,
     statistics_functions,
+    statistics_names_mapping,
 )
 
 
@@ -15,7 +15,9 @@ class DirectlyFollowsGraphBuilder:
     def start(self):
         sorted_log = self.log.sort_values(by=[self.parameters.timestamp_key])
         sorted_log = self.log.sort_values(by=[self.parameters.start_timestamp_key])
-        grouped_cases_by_id = sorted_log.groupby(self.parameters.case_id_key, dropna=True, sort=False)
+        grouped_cases_by_id = sorted_log.groupby(
+            self.parameters.case_id_key, dropna=True, sort=False
+        )
         self.create_graph(grouped_cases_by_id)
 
     def create_graph(self, grouped_cases_by_id):
@@ -50,7 +52,7 @@ class DirectlyFollowsGraphBuilder:
             )
             activity_cost = activity[self.parameters.cost_key]
             self.update_activity_data(activity_name, activity_time, activity_cost)
-        except KeyError as error:
+        except KeyError:
             pass
 
     def update_activity_data(self, name, time, cost):
@@ -115,4 +117,5 @@ class DirectlyFollowsGraphBuilder:
             value = statistics_functions[dimension_statistic](data, total_activities)
         else:
             value = statistics_functions[dimension_statistic](data)
-        return value
+
+        return max(value, 0)

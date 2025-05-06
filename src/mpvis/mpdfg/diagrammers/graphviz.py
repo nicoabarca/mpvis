@@ -37,7 +37,8 @@ class GraphVizDiagrammer:
         self.cost_currency = cost_currency
         self.rankdir = rankdir
         self.activities_ids = {}
-        self.dimensions_min_and_max = {}
+        self.activities_dimensions_min_and_max = {}
+        self.connections_dimensions_min_and_max = {}
         self.diagram = graphviz.Digraph("mpdfg", comment="Multi Perspective DFG")
 
         self.set_activities_ids_mapping()
@@ -47,8 +48,8 @@ class GraphVizDiagrammer:
         self.activities_ids = ids_mapping(self.dfg["activities"])
 
     def set_dimensions_min_and_max(self):
-        self.dimensions_min_and_max = dimensions_min_and_max(
-            self.dfg["activities"], self.dfg["connections"]
+        self.activities_dimensions_min_and_max, self.connections_dimensions_min_and_max = (
+            dimensions_min_and_max(self.dfg["activities"], self.dfg["connections"])
         )
 
     def build_diagram(self):
@@ -96,7 +97,9 @@ class GraphVizDiagrammer:
         return GRAPHVIZ_NODE_DATA.format(dimensions_rows_data)
 
     def activity_label_data(self, activity, dimension, measure):
-        bgcolor = background_color(measure, dimension, self.dimensions_min_and_max[dimension])
+        bgcolor = background_color(
+            measure, dimension, self.activities_dimensions_min_and_max[dimension]
+        )
         content = ""
         if dimension == "frequency":
             bgcolor = bgcolor if self.visualize_frequency else "royalblue"
@@ -126,12 +129,14 @@ class GraphVizDiagrammer:
             activity_id = self.activities_ids[activity]
             frequency = frequency if self.visualize_frequency else " "
             penwidth = (
-                link_width(frequency, self.dimensions_min_and_max["frequency"])
+                link_width(frequency, self.connections_dimensions_min_and_max["frequency"])
                 if self.visualize_frequency
                 else 1
             )
             color = (
-                background_color(frequency, "frequency", self.dimensions_min_and_max["frequency"])
+                background_color(
+                    frequency, "frequency", self.connections_dimensions_min_and_max["frequency"]
+                )
                 if self.visualize_frequency
                 else "black"
             )
@@ -154,7 +159,7 @@ class GraphVizDiagrammer:
         penwidth = (
             link_width(
                 self.dfg["connections"][connection]["frequency"],
-                self.dimensions_min_and_max["frequency"],
+                self.connections_dimensions_min_and_max["frequency"],
             )
             if self.visualize_frequency
             else 1
@@ -177,7 +182,9 @@ class GraphVizDiagrammer:
         return GRAPHVIZ_LINK_DATA.format(dimensions_string)
 
     def connection_label_data(self, dimension, measure):
-        bgcolor = background_color(measure, dimension, self.dimensions_min_and_max[dimension])
+        bgcolor = background_color(
+            measure, dimension, self.connections_dimensions_min_and_max[dimension]
+        )
         content = ""
         if dimension == "frequency":
             content = f"{measure:,}" if self.visualize_frequency else content
