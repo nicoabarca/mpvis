@@ -1,70 +1,72 @@
 import pandas as pd
-
 import mpvis
 
-blasting_event_log_path = "blasting_event_log.csv"
+# Load event log
+dron_event_log_path = "mesa_ayuda.csv"
 
 # Read event log
-blasting_event_log = pd.read_csv(blasting_event_log_path, sep=";")
+dron_event_log = pd.read_csv(dron_event_log_path, sep=";")
 
-# Key is the column format name of pm4py
-# Value is the column name of the specific log and soon to be changed to the column name of the event log
-# We eill always need 3 columns for case, activity and timestamp
-blasting_event_log_format = {
-    "case:concept:name": "Case ID",
-    "concept:name": "Activity",
-    "time:timestamp": "Complete",
-    "start_timestamp": "Start",
-    "resource": "Resource",
-    "cost:total": "Cost",
+# Verificar columnas
+dron_event_log['Fin'] = pd.to_datetime(dron_event_log['Fin'], format='%Y-%m-%d %H:%M:%S')
+dron_event_log['Inicio'] = pd.to_datetime(dron_event_log['Inicio'], format='%Y-%m-%d %H:%M:%S')
+
+# CORREGIDO: Key es el formato requerido por pm4py/mpvis
+# Value es el nombre real de la columna en tu CSV
+dron_event_log_format = {
+    "case:concept:name": "ID Caso",           # Corregido: era "Case ID"
+    "concept:name": "Actividad",              # Corregido: era "Activity" 
+    "time:timestamp": "Fin",                  # Corregido: era "Complete"
+    "start_timestamp": "Inicio",              # Corregido: era "Start"
+    "resource": "Ejecutor",                   # Corregido: era "Resource"
+    # "cost:total": "Cost",                   # No tienes columna de costo, comentado
 }
 
 # Format event log
 formatted_event_log = mpvis.log_formatter(
-    event_log=blasting_event_log, log_format=blasting_event_log_format
+    log=dron_event_log, log_format=dron_event_log_format
 )
 
 # Manual log grouping of activities
-
-# The activities to join in a single activity
+# Las actividades a agrupar deben usar los nombres exactos de tu CSV
 activities_to_group = [
-    "Coordinate verification of poligon pits status",
-    "Coordinate terrain revision",
+    # Aquí deberías poner los nombres exactos que aparecen en 'Nombre Actividad'
+    # Por ejemplo, si quieres agrupar algunas actividades del proceso de drones
 ]
 
-# Group the activities
-manual_grouped_event_log = mpvis.preprocessing.manual_log_grouping(
-    log=formatted_event_log,
-    activities_to_group=activities_to_group,
-    group_name="Grouped activities",
-)
-
+# Solo ejecutar si hay actividades para agrupar
+if activities_to_group:
+    manual_grouped_event_log = mpvis.preprocessing.manual_log_grouping(
+        log=formatted_event_log,
+        activities_to_group=activities_to_group,
+        group_name="Grouped activities",
+    )
+else:
+    manual_grouped_event_log = formatted_event_log
 
 # Prune the log based on the top variants
-pruned_event_log = mpvis.preprocessing.prune_log_based_on_top_variants(log=formatted_event_log, k=3)
-
+pruned_event_log = mpvis.preprocessing.prune_log_based_on_top_variants(
+    log=formatted_event_log, k=3
+)
 
 # MPDFG Functions
-
 # Discover Multi-Perspective DFG
-
 (multi_perspective_dfg, start_activities, end_activities) = (
     mpvis.mpdfg.discover_multi_perspective_dfg(
         log=formatted_event_log,
         calculate_frequency=True,
         calculate_time=True,
-        calculate_cost=True,
+        calculate_cost=False,  # Cambiado a False porque no tienes columna de costo
         frequency_statistic="absolute-activity",
         time_statistic="mean",
-        cost_statistic="mean",
+        # cost_statistic="mean",  # Comentado porque no hay costos
     )
 )
 
 # Filter Multi-Perspective DFG by activities
-
 activities_filtered_multi_perspective_dfg = mpvis.mpdfg.filter_multi_perspective_dfg_activities(
-    percentage=0.5,
-    dfg=multi_perspective_dfg,
+    percentage=1,
+    multi_perspective_dfg=multi_perspective_dfg,
     start_activities=start_activities,
     end_activities=end_activities,
     sort_by="frequency",
@@ -72,10 +74,9 @@ activities_filtered_multi_perspective_dfg = mpvis.mpdfg.filter_multi_perspective
 )
 
 # Filter Multi-Perspective DFG by paths
-
 paths_filtered_multi_perspective_dfg = mpvis.mpdfg.filter_multi_perspective_dfg_paths(
-    percentage=0.4,
-    dfg=multi_perspective_dfg,
+    percentage=1,
+    multi_perspective_dfg=multi_perspective_dfg,
     start_activities=start_activities,
     end_activities=end_activities,
     sort_by="frequency",
@@ -83,102 +84,112 @@ paths_filtered_multi_perspective_dfg = mpvis.mpdfg.filter_multi_perspective_dfg_
 )
 
 # Get Multi-Perspective DFG string
-
 multi_perspective_dfg_string = mpvis.mpdfg.get_multi_perspective_dfg_string(
     multi_perspective_dfg=multi_perspective_dfg,
     start_activities=start_activities,
     end_activities=end_activities,
     visualize_frequency=True,
     visualize_time=True,
-    visualize_cost=True,
+    visualize_cost=False,  # Cambiado a False
     cost_currency="USD",
     rankdir="TD",
     diagram_tool="graphviz",
+    arc_thickness_by="time"  # Ejemplo de uso del nuevo parámetro
 )
 
 # View Multi-Perspective DFG
-
 mpvis.mpdfg.view_multi_perspective_dfg(
     multi_perspective_dfg=multi_perspective_dfg,
     start_activities=start_activities,
     end_activities=end_activities,
     visualize_frequency=True,
     visualize_time=True,
-    visualize_cost=True,
-    cost_currency="USD",
-    rankdir="TD",
-    format="svg",
+    visualize_cost=False,  # Cambiado a False
+    arc_thickness_by="time"  # Ejemplo de uso del nuevo parámetro
 )
 
 # Save Multi-Perspective DFG
-
-mpvis.mpdfg.view_multi_perspective_dfg(
+mpvis.mpdfg.save_vis_multi_perspective_dfg(
     multi_perspective_dfg=multi_perspective_dfg,
     start_activities=start_activities,
     end_activities=end_activities,
-    file_name="multi_perspective_dfg.svg",
+    file_name="multi_perspective_dfg_time",
     visualize_frequency=True,
     visualize_time=True,
-    visualize_cost=True,
-    cost_currency="USD",
-    format="svg",
-    rankdir="TD",
+    visualize_cost=False,  # Cambiado a False
     diagram_tool="graphviz",
+    arc_thickness_by="time"  # Ejemplo de uso del nuevo parámetro
 )
-
+# Quiero generar las imagenes MPDFG pero con arc_thickness_by="frequency" and arc_thickness_by="none"
+# Save Multi-Perspective DFG with arc thickness by frequency
+mpvis.mpdfg.save_vis_multi_perspective_dfg(
+    multi_perspective_dfg=multi_perspective_dfg,
+    start_activities=start_activities,
+    end_activities=end_activities,
+    file_name="multi_perspective_dfg_frequency",
+    visualize_frequency=True,
+    visualize_time=True,
+    visualize_cost=False,  # Cambiado a False
+    diagram_tool="graphviz",
+    arc_thickness_by="frequency"  # Cambiado a frequency
+)               
+# Save Multi-Perspective DFG with arc thickness by none
+mpvis.mpdfg.save_vis_multi_perspective_dfg(
+    multi_perspective_dfg=multi_perspective_dfg,
+    start_activities=start_activities,
+    end_activities=end_activities,
+    file_name="multi_perspective_dfg_none",
+    visualize_frequency=True,
+    visualize_time=True,
+    visualize_cost=False,  # Cambiado a False
+    diagram_tool="graphviz",
+    arc_thickness_by="none"  # Cambiado a none
+)
 
 # MDDRT Functions
+# Descubre el Multi-Dimensional DRT usando el event log formateado
+# multi_dimensional_drt = mpvis.mddrt.discover_multi_dimensional_drt(
+#     log=formatted_event_log,
+#     calculate_time=True,
+#     calculate_cost=False,        # No hay columna de costo en el CSV
+#     calculate_quality=True,
+#     calculate_flexibility=True,
+#     group_activities=False,
+#     show_names=False,
+# )
 
-# Discover Multi-Dimensional DRT
+# Obtiene el string de la visualización del Multi-Dimensional DRT
+# multi_dimensional_drt_string = mpvis.mddrt.get_multi_dimensional_drt_string(
+#     multi_dimensional_drt=multi_dimensional_drt,
+#     visualize_time=True,
+#     visualize_cost=False,        # No hay columna de costo en el CSV
+#     visualize_flexibility=True,
+#     visualize_quality=True,
+#     node_measures=["total", "consumed", "remaining"],
+#     arc_measures=["avg", "min", "max"],
+# )
 
-multi_dimensional_drt = mpvis.mddrt.discover_multi_dimensional_drt(
-    log=formatted_event_log,
-    calculate_time=True,
-    calculate_cost=True,
-    calculate_quality=True,
-    calculate_flexibility=True,
-    frequency_statistic="absolute-activity",
-    time_statistic="mean",
-    cost_statistic="mean",
-    group_activities=False,
-    show_names=False,
-)
+# Muestra la visualización del Multi-Dimensional DRT
+# mpvis.mddrt.view_multi_dimensional_drt(
+#     multi_dimensional_drt=multi_dimensional_drt,
+#     visualize_time=True,
+#     visualize_cost=False,        # No hay columna de costo en el CSV
+#     visualize_flexibility=True,
+#     visualize_quality=True,
+#     node_measures=["total", "consumed", "remaining"],
+#     arc_measures=["avg", "min", "max"],
+#     format="svg",
+# )
 
-# Get Multi-Dimensional DRT string
-
-multi_dimensional_drt_string = mpvis.mddrt.get_multi_dimensional_drt_string(
-    multi_dimensional_drt=multi_dimensional_drt,
-    visualize_time=True,
-    visualize_cost=True,
-    visualize_flexibility=True,
-    visualize_quality=True,
-    node_measures=["total", "consumed", "remaining"],
-    arc_measures=["avg", "min", "max"],
-)
-
-# View Multi-Dimensional DRT
-
-mpvis.mddrt.view_multi_dimensional_drt(
-    multi_dimensional_drt=multi_dimensional_drt,
-    visualize_time=True,
-    visualize_cost=True,
-    visualize_flexibility=True,
-    visualize_quality=True,
-    node_measures=["total", "consumed", "remaining"],
-    arc_measures=["avg", "min", "max"],
-    format="svg",
-)
-
-# Save Multi-Dimensional DRT diagram
-
-mpvis.mddrt.save_vis_multi_dimensional_drt(
-    multi_dimensional_drt=multi_dimensional_drt,
-    file_path="multi_dimensional_drt.svg",
-    visualize_time=True,
-    visualize_cost=True,
-    visualize_flexibility=True,
-    visualize_quality=True,
-    node_measures=["total", "consumed", "remaining"],
-    arc_measures=["avg", "min", "max"],
-    format="svg",
-)
+# Guarda la visualización del Multi-Dimensional DRT en un archivo SVG
+# mpvis.mddrt.save_vis_multi_dimensional_drt(
+#     multi_dimensional_drt=multi_dimensional_drt,
+#     file_path="multi_dimensional_drt.svg",
+#     visualize_time=True,
+#     visualize_cost=False,        # No hay columna de costo en el CSV
+#     visualize_flexibility=True,
+#     visualize_quality=True,
+#     node_measures=["total", "consumed", "remaining"],
+#     arc_measures=["avg", "min", "max"],
+#     format="svg",
+# )
