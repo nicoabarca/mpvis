@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Literal
 
 import pandas as pd
@@ -202,6 +204,7 @@ def save_vis_multi_dimensional_drt(
     node_measures: list[Literal["total", "consumed", "remaining"]] = ["total"],
     arc_measures: list[Literal["avg", "min", "max"]] = [],
     format: str = "svg",
+    renderer: str | None = None,
 ):
     """
     Saves a visualization of a multi-dimensional directly rooted tree (DRT) to a file.
@@ -224,6 +227,7 @@ def save_vis_multi_dimensional_drt(
             - "min": Minimum measure of the arc.
             - "max": Maximum measure of the arc.
             Defaults to [].
+        renderer (str, optional): The renderer to use for the graphviz diagram. Options are "cairo", "dot", "gd". Defaults to None.
 
     Returns:
         None
@@ -238,4 +242,4 @@ def save_vis_multi_dimensional_drt(
         node_measures=node_measures,
         arc_measures=arc_measures,
     )
-    save_graphviz_diagram(drt_string, file_path, format)
+    save_graphviz_diagram(drt_string, file_path, format, renderer)

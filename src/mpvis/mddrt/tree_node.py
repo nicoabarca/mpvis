@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import copy
+import sys
 from typing import TYPE_CHECKING, Literal
 
 from mpvis.mddrt.utils.builder import activities_dimension_cumsum, create_dimensions_data
 from mpvis.mddrt.utils.misc import pretty_format_dict
 from mpvis.mddrt.utils.optional_activities import OptionalActivities
+
+sys.setrecursionlimit(10**6)
 
 if TYPE_CHECKING:
     from datetime import timedelta
