@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class TreeNode:
     id: int = 0
 
-    def __init__(self, name: str, depth: int) -> None:
+    def __init__(self, *, name: str, depth: int, is_path_end: bool) -> None:
         self.id: int = TreeNode.id
         self.name: str = name
         self.depth: int = depth
@@ -24,6 +24,7 @@ class TreeNode:
         )
         self.parent: TreeNode = None
         self.children: list[TreeNode] = []
+        self.is_path_end: bool = is_path_end
         TreeNode.id += 1
 
     def add_children(self, node: TreeNode) -> None:
@@ -32,9 +33,11 @@ class TreeNode:
     def set_parent(self, parent_node: TreeNode) -> None:
         self.parent = parent_node
 
-    def get_child_by_name_and_depth(self, name: str, depth: int) -> TreeNode | None:
+    def get_child_by_name_depth_and_end_status(
+        self, *, name: str, depth: int, is_path_end: bool
+    ) -> TreeNode | None:
         for child in self.children:
-            if child.name == name and child.depth == depth:
+            if child.name == name and child.depth == depth and child.is_path_end == is_path_end:
                 return child
         return None
 
