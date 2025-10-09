@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Tuple
 
 import pandas as pd
@@ -250,6 +252,7 @@ def save_vis_multi_perspective_dfg(
     format: str = "svg",
     rankdir: str = "TD",
     diagram_tool: str = "graphviz",
+    renderer: str | None = None,
 ):
     """
     Save a visual representation of a multi-perspective Directly-Follows Graph (DFG) to a file.
@@ -267,6 +270,7 @@ def save_vis_multi_perspective_dfg(
         format (str, optional): The format of the visual representation file. Defaults to "svg". More output formats can be found at https://graphviz.org/docs/outputs
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD".
         diagram_tool (str | "graphviz" | "mermaid", optional): The diagram tool to use for building the diagram. Defaults to "graphviz".
+        renderer (str, optional): The renderer to use for the graphviz diagram. Options are "cairo", "dot", "gd". Defaults to None.
 
     Note:
         Mermaid diagrammer only supports saving the DFG diagram as a HTML file. It does not support viewing the diagram in interactive Python environments like Jupyter Notebooks and Google Colabs. Also the user needs internet connection to properly show the diagram in the HTML.
@@ -284,7 +288,7 @@ def save_vis_multi_perspective_dfg(
         diagram_tool=diagram_tool,
     )
     if diagram_tool == "graphviz":
-        save_graphviz_diagram(dfg_string, file_name, format)
+        save_graphviz_diagram(dfg_string, file_name, format, renderer)
     elif diagram_tool == "mermaid":
         save_mermaid_diagram(dfg_string, file_name)
     else:

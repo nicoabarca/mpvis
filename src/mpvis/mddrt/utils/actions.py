@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import platform
 import subprocess
@@ -6,9 +8,15 @@ import tempfile
 from graphviz import Source
 
 
-def save_graphviz_diagram(drt_string: str, filename: str, format: str):
+def save_graphviz_diagram(drt_string: str, filename: str, format: str, renderer: str | None = None):
     graph = Source(drt_string)
-    graph.render(filename=filename, format=format, cleanup=True)
+    graph.render(
+        filename=filename,
+        format=format,
+        cleanup=True,
+        outfile=f"{filename}.{format}",
+        renderer=renderer,
+    )
 
 
 def view_graphviz_diagram(drt_string: str, format: str):
