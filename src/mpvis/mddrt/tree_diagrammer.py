@@ -6,8 +6,10 @@ from typing import TYPE_CHECKING, Callable, Literal
 import graphviz
 
 from mpvis.mddrt.utils.constants import (
+    ARC_TEXT_COLORS,
     GRAPHVIZ_ACTIVITY,
     GRAPHVIZ_ACTIVITY_DATA,
+    GRAPHVIZ_ACTIVITY_DATA_COLORED,
     GRAPHVIZ_STATE_NODE,
     GRAPHVIZ_STATE_NODE_ROW,
 )
@@ -179,7 +181,9 @@ class DirectlyRootedTreeDiagrammer:
         elif dimension == "quality":
             link_row += f"Is Rework: {node.dimensions_data['quality']['is_rework']}<br/>"
 
-        return GRAPHVIZ_ACTIVITY_DATA.format(link_row)
+        # Apply dimension-specific color to the text
+        color = ARC_TEXT_COLORS.get(dimension, "black")
+        return GRAPHVIZ_ACTIVITY_DATA_COLORED.format(color, link_row)
 
     def format_value(
         self,

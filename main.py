@@ -193,3 +193,50 @@ mpvis.mpdfg.save_vis_multi_perspective_dfg(
 #     arc_measures=["avg", "min", "max"],
 #     format="svg",
 # )
+
+# Discover Multi-Dimensional DRT
+print("Discovering Multi-Dimensional DRT...")
+drt = mpvis.mddrt.discover_multi_dimensional_drt(
+    log=formatted_event_log,
+    calculate_time=True,
+    calculate_cost=True,
+    calculate_quality=True,
+    calculate_flexibility=True,
+    group_activities=False,
+    show_names=False,
+)
+
+# Visualize with arc measures to see colored text
+print("Generating visualization with colored arc text...")
+print("Colors used:")
+print("  - Time metrics (Service Time, Lead Time): Orange/Red (#FF6B35)")
+print("  - Cost metrics: Green (#4CAF50)")
+print("  - Quality metrics (Rework): Blue (#2196F3)")
+print("  - Flexibility metrics (Optional): Purple (#9C27B0)")
+print()
+
+# View the DRT with arc measures enabled
+mpvis.mddrt.view_multi_dimensional_drt(
+    multi_dimensional_drt=drt,
+    visualize_time=True,
+    visualize_cost=True,
+    visualize_quality=True,
+    visualize_flexibility=True,
+    node_measures=["total", "consumed", "remaining"],
+    arc_measures=["avg", "min", "max"],  # This enables arc text with colors!
+    format="svg",
+)
+
+# Save the visualization
+print("Saving visualization to file...")
+mpvis.mddrt.save_vis_multi_dimensional_drt(
+    multi_dimensional_drt=drt,
+    file_path="mddrt_colored_arcs.svg",
+    visualize_time=True,
+    visualize_cost=True,
+    visualize_quality=True,
+    visualize_flexibility=True,
+    node_measures=["total"],
+    arc_measures=["avg", "min", "max"],
+    format="svg",
+)
