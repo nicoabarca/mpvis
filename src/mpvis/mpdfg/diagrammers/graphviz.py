@@ -1,4 +1,5 @@
 from typing import Literal
+
 import graphviz
 
 from mpvis.mpdfg.utils.constants import (
@@ -28,7 +29,7 @@ class GraphVizDiagrammer:
         visualize_cost: bool = True,
         cost_currency: str = "USD",
         rankdir: str = "TB",
-    arc_thickness_by: Literal["frequency", "time"] = "frequency",
+        arc_thickness_by: Literal["frequency", "time"] = "frequency",
     ):
         self.dfg = dfg
         self.start_activities = start_activities
@@ -203,12 +204,12 @@ class GraphVizDiagrammer:
         """Calculate arc thickness for regular connections based on arc_thickness_by parameter."""
         try:
             return link_width(
-                    self.dfg["connections"][connection][self.arc_thickness_by],
-                    self.connections_dimensions_min_and_max[self.arc_thickness_by],
-                    )
+                self.dfg["connections"][connection][self.arc_thickness_by],
+                self.connections_dimensions_min_and_max[self.arc_thickness_by],
+            )
         except KeyError:
             return 1
-    
+
     def get_arc_thickness_for_extreme(self, frequency):
         if self.arc_thickness_by == "frequency" and isinstance(frequency, (int, float)):
             return link_width(frequency, self.connections_dimensions_min_and_max["frequency"])
