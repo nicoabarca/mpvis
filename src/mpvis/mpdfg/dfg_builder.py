@@ -13,8 +13,8 @@ class DirectlyFollowsGraphBuilder:
         self.parameters = parameters
 
     def start(self):
-        sorted_log = self.log.sort_values(by=[self.parameters.timestamp_key])
-        sorted_log = self.log.sort_values(by=[self.parameters.start_timestamp_key])
+        sorting_order = [self.parameters.start_timestamp_key, self.parameters.timestamp_key]
+        sorted_log = self.log.sort_values(by=sorting_order, kind="stable") 
         grouped_cases_by_id = sorted_log.groupby(
             self.parameters.case_id_key, dropna=True, sort=False
         )

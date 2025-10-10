@@ -1,3 +1,5 @@
+from typing import Literal
+
 import graphviz
 
 from mpvis.mpdfg.utils.constants import (
@@ -27,6 +29,7 @@ class GraphVizDiagrammer:
         visualize_cost: bool = True,
         cost_currency: str = "USD",
         rankdir: str = "TB",
+        arc_thickness_by: Literal["frequency", "time"] = "frequency",
     ):
         self.dfg = dfg
         self.start_activities = start_activities
@@ -36,6 +39,7 @@ class GraphVizDiagrammer:
         self.visualize_cost = visualize_cost
         self.cost_currency = cost_currency
         self.rankdir = rankdir
+        self.arc_thickness_by = arc_thickness_by
         self.activities_ids = {}
         self.activities_dimensions_min_and_max = {}
         self.connections_dimensions_min_and_max = {}
@@ -128,11 +132,7 @@ class GraphVizDiagrammer:
         for activity, frequency in activities.items():
             activity_id = self.activities_ids[activity]
             frequency = frequency if self.visualize_frequency else " "
-            penwidth = (
-                link_width(frequency, self.connections_dimensions_min_and_max["frequency"])
-                if self.visualize_frequency
-                else 1
-            )
+            penwidth = self.get_arc_thickness_for_extreme(frequency)
             color = (
                 background_color(
                     frequency, "frequency", self.connections_dimensions_min_and_max["frequency"]
@@ -156,14 +156,7 @@ class GraphVizDiagrammer:
             self.activities_ids[connection[0]],
             self.activities_ids[connection[1]],
         )
-        penwidth = (
-            link_width(
-                self.dfg["connections"][connection]["frequency"],
-                self.connections_dimensions_min_and_max["frequency"],
-            )
-            if self.visualize_frequency
-            else 1
-        )
+        penwidth = self.get_arc_thickness_for_connection(connection)
         if self.visualize_frequency or self.visualize_time:
             label = self.build_connection_label(connection)
             self.diagram.edge(
@@ -206,6 +199,21 @@ class GraphVizDiagrammer:
             activity_name = activity_name.replace("&lt;br/&gt;", "<br/>")
 
         return activity_name
+
+    def get_arc_thickness_for_connection(self, connection):
+        """Calculate arc thickness for regular connections based on arc_thickness_by parameter."""
+        try:
+            return link_width(
+                self.dfg["connections"][connection][self.arc_thickness_by],
+                self.connections_dimensions_min_and_max[self.arc_thickness_by],
+            )
+        except KeyError:
+            return 1
+
+    def get_arc_thickness_for_extreme(self, frequency):
+        if self.arc_thickness_by == "frequency" and isinstance(frequency, (int, float)):
+            return link_width(frequency, self.connections_dimensions_min_and_max["frequency"])
+        return 1
 
     def get_diagram_string(self):
         return self.diagram.source

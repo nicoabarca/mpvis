@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Literal, Tuple
 
 import pandas as pd
 
@@ -138,6 +138,7 @@ def get_multi_perspective_dfg_string(
     cost_currency: str = "USD",
     rankdir: str = "TD",
     diagram_tool: str = "graphviz",
+    arc_thickness_by: Literal["frequency", "time"] = "frequency",
 ):
     """
     Creates a string representation of a multi-perspective Directly-Follows Graph (DFG) diagram.
@@ -152,6 +153,7 @@ def get_multi_perspective_dfg_string(
         cost_currency (str, optional): The currency symbol to use for cost visualization. Defaults to "USD".
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD".
         diagram_tool (str, optional): The diagram_tool to use for building the diagram. Valid values are "graphviz" and "mermaid". Defaults to "graphviz".
+        arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time", "none". Defaults to "frequency".
 
     Returns:
         str: The string representation of the multi-perspective DFG diagram.
@@ -171,6 +173,7 @@ def get_multi_perspective_dfg_string(
             visualize_cost,
             cost_currency,
             rankdir,
+            arc_thickness_by,
         )
     else:
         diagrammer = MermaidDiagrammer(
@@ -199,6 +202,7 @@ def view_multi_perspective_dfg(
     cost_currency: str = "USD",
     rankdir: str = "TD",
     format: str = "svg",
+    arc_thickness_by: Literal["frequency", "time"] = "frequency",
 ):
     """
     Visualizes a multi-perspective Directly-Follows Graph (DFG) using graphviz in interactive Python environments.
@@ -213,6 +217,7 @@ def view_multi_perspective_dfg(
         cost_currency (str, optional): The currency symbol to be displayed with the cost. Defaults to "USD".
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD" (top-down).
         format (str, optional): The file format of the visualization output (e.g., "jpg", "png", "jpeg", "svg", "webp"). Defaults to "svg".
+        arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time", "none". Defaults to "frequency".
 
     Raises:
         IOError: if the temporary file cannot be created or read.
@@ -233,6 +238,7 @@ def view_multi_perspective_dfg(
         visualize_cost=visualize_cost,
         cost_currency=cost_currency,
         rankdir=rankdir,
+        arc_thickness_by=arc_thickness_by,
     )
 
     view_graphviz_diagram(dfg_string, format=format)
@@ -250,6 +256,7 @@ def save_vis_multi_perspective_dfg(
     format: str = "svg",
     rankdir: str = "TD",
     diagram_tool: str = "graphviz",
+    arc_thickness_by: Literal["frequency", "time"] = "frequency",
 ):
     """
     Save a visual representation of a multi-perspective Directly-Follows Graph (DFG) to a file.
@@ -267,6 +274,7 @@ def save_vis_multi_perspective_dfg(
         format (str, optional): The format of the visual representation file. Defaults to "svg". More output formats can be found at https://graphviz.org/docs/outputs
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD".
         diagram_tool (str | "graphviz" | "mermaid", optional): The diagram tool to use for building the diagram. Defaults to "graphviz".
+        arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time", "none". Defaults to "frequency".
 
     Note:
         Mermaid diagrammer only supports saving the DFG diagram as a HTML file. It does not support viewing the diagram in interactive Python environments like Jupyter Notebooks and Google Colabs. Also the user needs internet connection to properly show the diagram in the HTML.
@@ -282,6 +290,7 @@ def save_vis_multi_perspective_dfg(
         cost_currency=cost_currency,
         rankdir=rankdir,
         diagram_tool=diagram_tool,
+        arc_thickness_by=arc_thickness_by,
     )
     if diagram_tool == "graphviz":
         save_graphviz_diagram(dfg_string, file_name, format)
