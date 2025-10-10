@@ -14,6 +14,11 @@ classifiers = [
 ]
 license = { file = "LICENSE" }
 
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/nicoabarca/mpvis"
 Issues = "https://github.com/nicoabarca/mpvis/issues"

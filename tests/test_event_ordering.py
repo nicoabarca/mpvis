@@ -11,6 +11,7 @@ The test creates cases with identical timestamps to verify stable sorting behavi
 """
 
 import pandas as pd
+
 import mpvis
 
 
@@ -19,34 +20,117 @@ def test_event_ordering_with_identical_timestamps():
     Test that events with identical timestamps are correctly ordered
     throughout the entire case execution, not just at the start.
     """
-
     # Create a synthetic event log with identical timestamps at different positions
-    event_log = pd.DataFrame([
-        # Case 1: Identical timestamps in the MIDDLE of execution
-        {"case_id": "C1", "activity": "A", "start_time": "2024-01-01 10:00:00", "end_time": "2024-01-01 10:00:05"},
-        {"case_id": "C1", "activity": "B", "start_time": "2024-01-01 10:00:05", "end_time": "2024-01-01 10:00:10"},
-        {"case_id": "C1", "activity": "C", "start_time": "2024-01-01 10:00:10", "end_time": "2024-01-01 10:00:10"},  # Same timestamp
-        {"case_id": "C1", "activity": "D", "start_time": "2024-01-01 10:00:10", "end_time": "2024-01-01 10:00:10"},  # Same timestamp
-        {"case_id": "C1", "activity": "E", "start_time": "2024-01-01 10:00:10", "end_time": "2024-01-01 10:00:15"},
-
-        # Case 2: Similar pattern to verify consistency
-        {"case_id": "C2", "activity": "A", "start_time": "2024-01-01 11:00:00", "end_time": "2024-01-01 11:00:05"},
-        {"case_id": "C2", "activity": "B", "start_time": "2024-01-01 11:00:05", "end_time": "2024-01-01 11:00:10"},
-        {"case_id": "C2", "activity": "C", "start_time": "2024-01-01 11:00:10", "end_time": "2024-01-01 11:00:10"},  # Same timestamp
-        {"case_id": "C2", "activity": "D", "start_time": "2024-01-01 11:00:10", "end_time": "2024-01-01 11:00:10"},  # Same timestamp
-        {"case_id": "C2", "activity": "E", "start_time": "2024-01-01 11:00:10", "end_time": "2024-01-01 11:00:15"},
-
-        # Case 3: Identical timestamps at START
-        {"case_id": "C3", "activity": "A", "start_time": "2024-01-01 12:00:00", "end_time": "2024-01-01 12:00:00"},  # Same timestamp
-        {"case_id": "C3", "activity": "B", "start_time": "2024-01-01 12:00:00", "end_time": "2024-01-01 12:00:05"},
-        {"case_id": "C3", "activity": "C", "start_time": "2024-01-01 12:00:05", "end_time": "2024-01-01 12:00:10"},
-
-        # Case 4: Identical timestamps at END
-        {"case_id": "C4", "activity": "A", "start_time": "2024-01-01 13:00:00", "end_time": "2024-01-01 13:00:05"},
-        {"case_id": "C4", "activity": "B", "start_time": "2024-01-01 13:00:05", "end_time": "2024-01-01 13:00:10"},
-        {"case_id": "C4", "activity": "C", "start_time": "2024-01-01 13:00:10", "end_time": "2024-01-01 13:00:15"},
-        {"case_id": "C4", "activity": "D", "start_time": "2024-01-01 13:00:15", "end_time": "2024-01-01 13:00:15"},  # Same timestamp
-    ])
+    event_log = pd.DataFrame(
+        [
+            # Case 1: Identical timestamps in the MIDDLE of execution
+            {
+                "case_id": "C1",
+                "activity": "A",
+                "start_time": "2024-01-01 10:00:00",
+                "end_time": "2024-01-01 10:00:05",
+            },
+            {
+                "case_id": "C1",
+                "activity": "B",
+                "start_time": "2024-01-01 10:00:05",
+                "end_time": "2024-01-01 10:00:10",
+            },
+            {
+                "case_id": "C1",
+                "activity": "C",
+                "start_time": "2024-01-01 10:00:10",
+                "end_time": "2024-01-01 10:00:10",
+            },  # Same timestamp
+            {
+                "case_id": "C1",
+                "activity": "D",
+                "start_time": "2024-01-01 10:00:10",
+                "end_time": "2024-01-01 10:00:10",
+            },  # Same timestamp
+            {
+                "case_id": "C1",
+                "activity": "E",
+                "start_time": "2024-01-01 10:00:10",
+                "end_time": "2024-01-01 10:00:15",
+            },
+            # Case 2: Similar pattern to verify consistency
+            {
+                "case_id": "C2",
+                "activity": "A",
+                "start_time": "2024-01-01 11:00:00",
+                "end_time": "2024-01-01 11:00:05",
+            },
+            {
+                "case_id": "C2",
+                "activity": "B",
+                "start_time": "2024-01-01 11:00:05",
+                "end_time": "2024-01-01 11:00:10",
+            },
+            {
+                "case_id": "C2",
+                "activity": "C",
+                "start_time": "2024-01-01 11:00:10",
+                "end_time": "2024-01-01 11:00:10",
+            },  # Same timestamp
+            {
+                "case_id": "C2",
+                "activity": "D",
+                "start_time": "2024-01-01 11:00:10",
+                "end_time": "2024-01-01 11:00:10",
+            },  # Same timestamp
+            {
+                "case_id": "C2",
+                "activity": "E",
+                "start_time": "2024-01-01 11:00:10",
+                "end_time": "2024-01-01 11:00:15",
+            },
+            # Case 3: Identical timestamps at START
+            {
+                "case_id": "C3",
+                "activity": "A",
+                "start_time": "2024-01-01 12:00:00",
+                "end_time": "2024-01-01 12:00:00",
+            },  # Same timestamp
+            {
+                "case_id": "C3",
+                "activity": "B",
+                "start_time": "2024-01-01 12:00:00",
+                "end_time": "2024-01-01 12:00:05",
+            },
+            {
+                "case_id": "C3",
+                "activity": "C",
+                "start_time": "2024-01-01 12:00:05",
+                "end_time": "2024-01-01 12:00:10",
+            },
+            # Case 4: Identical timestamps at END
+            {
+                "case_id": "C4",
+                "activity": "A",
+                "start_time": "2024-01-01 13:00:00",
+                "end_time": "2024-01-01 13:00:05",
+            },
+            {
+                "case_id": "C4",
+                "activity": "B",
+                "start_time": "2024-01-01 13:00:05",
+                "end_time": "2024-01-01 13:00:10",
+            },
+            {
+                "case_id": "C4",
+                "activity": "C",
+                "start_time": "2024-01-01 13:00:10",
+                "end_time": "2024-01-01 13:00:15",
+            },
+            {
+                "case_id": "C4",
+                "activity": "D",
+                "start_time": "2024-01-01 13:00:15",
+                "end_time": "2024-01-01 13:00:15",
+            },  # Same timestamp
+        ]
+    )
 
     # Format the event log
     event_log_format = {
@@ -70,11 +154,6 @@ def test_event_ordering_with_identical_timestamps():
     # Verify expected connections exist with correct frequencies
     connections = dfg["connections"]
 
-    # Debug: Print all connections first
-    print(f"\nDiscovered {len(connections)} connections:")
-    for conn, data in sorted(connections.items()):
-        print(f"  {conn[0]} -> {conn[1]}: frequency={data['frequency']}")
-
     # Case 1 & 2 & 4: Check middle connections (C -> D -> E)
     # These are the critical connections that test middle-of-case ordering
     assert ("C", "D") in connections, "Connection C -> D should exist (middle of case)"
@@ -93,7 +172,10 @@ def test_event_ordering_with_identical_timestamps():
 
     # Verify that we don't have unexpected connections (which would indicate wrong ordering)
     # For example, D -> C should NOT exist if ordering is correct
-    assert ("D", "C") not in connections, "Connection D -> C should NOT exist (would indicate wrong ordering)"
+    assert (
+        "D",
+        "C",
+    ) not in connections, "Connection D -> C should NOT exist (would indicate wrong ordering)"
 
     # Verify start and end activities are correct
     assert "A" in start_activities, "A should be a start activity"
@@ -101,28 +183,42 @@ def test_event_ordering_with_identical_timestamps():
 
     assert "E" in end_activities or "D" in end_activities, "E or D should be end activities"
 
-    print("✅ All ordering tests passed!")
-    print(f"\nDiscovered {len(connections)} connections:")
-    for conn, data in sorted(connections.items()):
-        print(f"  {conn[0]} -> {conn[1]}: frequency={data['frequency']}")
-
-    return True
-
 
 def test_stable_sort_preserves_original_order():
     """
     Test that stable sorting preserves the original order of rows
     when timestamps are identical.
     """
-
     # Create a log where the original row order matters
-    event_log = pd.DataFrame([
-        # Case with events in specific order (row 0, 1, 2, 3)
-        {"case_id": "C1", "activity": "X", "start_time": "2024-01-01 10:00:00", "end_time": "2024-01-01 10:00:00"},
-        {"case_id": "C1", "activity": "Y", "start_time": "2024-01-01 10:00:00", "end_time": "2024-01-01 10:00:00"},
-        {"case_id": "C1", "activity": "Z", "start_time": "2024-01-01 10:00:00", "end_time": "2024-01-01 10:00:00"},
-        {"case_id": "C1", "activity": "W", "start_time": "2024-01-01 10:00:00", "end_time": "2024-01-01 10:00:05"},
-    ])
+    event_log = pd.DataFrame(
+        [
+            # Case with events in specific order (row 0, 1, 2, 3)
+            {
+                "case_id": "C1",
+                "activity": "X",
+                "start_time": "2024-01-01 10:00:00",
+                "end_time": "2024-01-01 10:00:00",
+            },
+            {
+                "case_id": "C1",
+                "activity": "Y",
+                "start_time": "2024-01-01 10:00:00",
+                "end_time": "2024-01-01 10:00:00",
+            },
+            {
+                "case_id": "C1",
+                "activity": "Z",
+                "start_time": "2024-01-01 10:00:00",
+                "end_time": "2024-01-01 10:00:00",
+            },
+            {
+                "case_id": "C1",
+                "activity": "W",
+                "start_time": "2024-01-01 10:00:00",
+                "end_time": "2024-01-01 10:00:05",
+            },
+        ]
+    )
 
     event_log_format = {
         "case:concept:name": "case_id",
@@ -151,27 +247,3 @@ def test_stable_sort_preserves_original_order():
     # These should NOT exist if order is preserved
     assert ("Y", "X") not in connections, "Y -> X should NOT exist (would indicate order violation)"
     assert ("Z", "Y") not in connections, "Z -> Y should NOT exist (would indicate order violation)"
-
-    print("✅ Stable sort test passed!")
-    print(f"Preserved order: X -> Y -> Z -> W")
-
-    return True
-
-
-if __name__ == "__main__":
-    print("Testing event ordering with identical timestamps...\n")
-    print("=" * 60)
-    print("Test 1: Identical timestamps throughout case execution")
-    print("=" * 60)
-    test_event_ordering_with_identical_timestamps()
-
-    print("\n" + "=" * 60)
-    print("Test 2: Stable sort preserves original order")
-    print("=" * 60)
-    test_stable_sort_preserves_original_order()
-
-    print("\n" + "=" * 60)
-    print("✅ ALL TESTS PASSED!")
-    print("=" * 60)
-    print("\nConclusion: The stable sorting approach correctly orders events")
-    print("at the START, MIDDLE, and END of case execution.")
