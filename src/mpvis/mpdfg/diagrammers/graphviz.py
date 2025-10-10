@@ -206,13 +206,13 @@ class GraphVizDiagrammer:
                     self.dfg["connections"][connection][self.arc_thickness_by],
                     self.connections_dimensions_min_and_max[self.arc_thickness_by],
                     )
-        except KeyError:  # if by any chance self.arc_thickness_by value is not a key in self.dfg["connections"][connection] or self.connections_dimensions_min_and_max
+        except KeyError:
             return 1
     
     def get_arc_thickness_for_extreme(self, frequency):
-        if self.arc_thickness_by == "frecuency" and isinstance(frequency, (int, float)):
+        if self.arc_thickness_by == "frequency" and isinstance(frequency, (int, float)):
             return link_width(frequency, self.connections_dimensions_min_and_max["frequency"])
-        return 1 # for every other case return value will be 1
+        return 1
 
     def get_diagram_string(self):
         return self.diagram.source
