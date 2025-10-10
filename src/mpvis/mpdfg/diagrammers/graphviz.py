@@ -1,3 +1,4 @@
+from typing import Literal
 import graphviz
 
 from mpvis.mpdfg.utils.constants import (
@@ -27,7 +28,7 @@ class GraphVizDiagrammer:
         visualize_cost: bool = True,
         cost_currency: str = "USD",
         rankdir: str = "TB",
-        arc_thickness_by: str = "frequency",
+    arc_thickness_by: Literal["frequency", "time"] = "frequency",
     ):
         self.dfg = dfg
         self.start_activities = start_activities
@@ -200,33 +201,18 @@ class GraphVizDiagrammer:
 
     def get_arc_thickness_for_connection(self, connection):
         """Calculate arc thickness for regular connections based on arc_thickness_by parameter."""
-        if self.arc_thickness_by == "frequency":
-            if "frequency" in self.dfg["connections"][connection]:
-                return link_width(
-                    self.dfg["connections"][connection]["frequency"],
-                    self.connections_dimensions_min_and_max["frequency"],
-                )
-            return 1
-        elif self.arc_thickness_by == "time":
-            if "time" in self.dfg["connections"][connection]:
-                return link_width(
-                    self.dfg["connections"][connection]["time"],
-                    self.connections_dimensions_min_and_max["time"],
-                )
-            return 1
-        else:  # "none" or any other value
+        try:
+            return link_width(
+                    self.dfg["connections"][connection][self.arc_thickness_by],
+                    self.connections_dimensions_min_and_max[self.arc_thickness_by],
+                    )
+        except KeyError:  # if by any chance self.arc_thickness_by value is not a key in self.dfg["connections"][connection] or self.connections_dimensions_min_and_max
             return 1
     
     def get_arc_thickness_for_extreme(self, frequency):
-        """Calculate arc thickness for start/end connections."""
-        if self.arc_thickness_by == "frequency":
-            if isinstance(frequency, (int, float)) and "frequency" in self.connections_dimensions_min_and_max:
-                return link_width(frequency, self.connections_dimensions_min_and_max["frequency"])
-            return 1
-        elif self.arc_thickness_by == "time":
-            return 1
-        else:  # "none" or any other value
-            return 1
+        if self.arc_thickness_by == "frecuency" and isinstance(frequency, (int, float)):
+            return link_width(frequency, self.connections_dimensions_min_and_max["frequency"])
+        return 1 # for every other case return value will be 1
 
     def get_diagram_string(self):
         return self.diagram.source

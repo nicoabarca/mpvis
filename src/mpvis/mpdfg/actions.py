@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Literal, Tuple
 
 import pandas as pd
 
@@ -138,7 +138,7 @@ def get_multi_perspective_dfg_string(
     cost_currency: str = "USD",
     rankdir: str = "TD",
     diagram_tool: str = "graphviz",
-    arc_thickness_by: str = "frequency",
+    arc_thickness_by: Literal["frequency", "time"] = "frequency",
 ):
     """
     Creates a string representation of a multi-perspective Directly-Follows Graph (DFG) diagram.
@@ -202,7 +202,7 @@ def view_multi_perspective_dfg(
     cost_currency: str = "USD",
     rankdir: str = "TD",
     format: str = "svg",
-    arc_thickness_by: str = "frequency",
+    arc_thickness_by: Literal["frequency", "time"] = "frequency",
 ):
     """
     Visualizes a multi-perspective Directly-Follows Graph (DFG) using graphviz in interactive Python environments.
@@ -256,7 +256,7 @@ def save_vis_multi_perspective_dfg(
     format: str = "svg",
     rankdir: str = "TD",
     diagram_tool: str = "graphviz",
-    arc_thickness_by: str = "frequency",
+    arc_thickness_by: Literal["frequency", "time"] = "frequency",
 ):
     """
     Save a visual representation of a multi-perspective Directly-Follows Graph (DFG) to a file.
