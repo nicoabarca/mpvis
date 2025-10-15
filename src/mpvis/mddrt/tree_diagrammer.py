@@ -155,6 +155,7 @@ class DirectlyRootedTreeDiagrammer:
     def build_link_label(self, node: TreeNode) -> str:
         node_name = self.build_activity_link_name(node)
 
+        # Create a wrapper table with an invisible spacer cell on the left
         # Start with header row containing activity name and frequency
         activity_header = f"{node_name} ({node.frequency})"
         content = GRAPHVIZ_ARC_HEADER.format(activity_header)
@@ -164,7 +165,9 @@ class DirectlyRootedTreeDiagrammer:
             for dimension in self.dimensions_to_diagram:
                 content += self.build_link_dimension_section(dimension, node)
 
-        return GRAPHVIZ_ARC_TABLE.format(content)
+        # Wrap the table with a spacer to push it right
+        table_content = GRAPHVIZ_ARC_TABLE.format(content)
+        return f'<table border="0" cellborder="0" cellspacing="0" cellpadding="0"><tr><td width="20"></td><td>{table_content}</td></tr></table>'
 
     def build_link_dimension_section(
         self,
@@ -247,7 +250,7 @@ class DirectlyRootedTreeDiagrammer:
         if "&lt;br/&gt;" in node_name:
             node_name = node_name.replace("&lt;br/&gt;", "<br/>")
 
-        return f"{node_name} ({node.frequency})"
+        return node_name
 
     def build_dimension_row_string(self, dimension: str, metric: str) -> str:
         metric_string_mapper = {
