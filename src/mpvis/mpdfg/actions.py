@@ -90,7 +90,7 @@ def filter_multi_perspective_dfg_activities(
         ascending (bool, optional): Whether to filter activities starting with those with the lowest statistic, or the highest. Defaults to True.
 
     Returns:
-        str: The filtered multi-perspective DFG.
+        dict: The filtered multi-perspective DFG.
 
     """
     filtered_dfg = filter_dfg_activities(
@@ -119,7 +119,7 @@ def filter_multi_perspective_dfg_paths(
         ascending (bool, optional): Whether to filter paths starting with those with the lowest statistic, or the highest. Defaults to True.
 
     Returns:
-        str: The filtered multi-perspective DFG.
+        dict: The filtered multi-perspective DFG.
 
     """
     filtered_dfg = filter_dfg_paths(
@@ -153,7 +153,7 @@ def get_multi_perspective_dfg_string(
         cost_currency (str, optional): The currency symbol to use for cost visualization. Defaults to "USD".
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD".
         diagram_tool (str, optional): The diagram_tool to use for building the diagram. Valid values are "graphviz" and "mermaid". Defaults to "graphviz".
-        arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time", "none". Defaults to "frequency".
+        arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time". Defaults to "frequency".
 
     Returns:
         str: The string representation of the multi-perspective DFG diagram.
@@ -217,7 +217,7 @@ def view_multi_perspective_dfg(
         cost_currency (str, optional): The currency symbol to be displayed with the cost. Defaults to "USD".
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD" (top-down).
         format (str, optional): The file format of the visualization output (e.g., "jpg", "png", "jpeg", "svg", "webp"). Defaults to "svg".
-        arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time", "none". Defaults to "frequency".
+        arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time". Defaults to "frequency".
 
     Raises:
         IOError: if the temporary file cannot be created or read.
@@ -274,7 +274,7 @@ def save_vis_multi_perspective_dfg(
         format (str, optional): The format of the visual representation file. Defaults to "svg". More output formats can be found at https://graphviz.org/docs/outputs
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD".
         diagram_tool (str | "graphviz" | "mermaid", optional): The diagram tool to use for building the diagram. Defaults to "graphviz".
-        arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time", "none". Defaults to "frequency".
+        arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time". Defaults to "frequency".
 
     Note:
         Mermaid diagrammer only supports saving the DFG diagram as a HTML file. It does not support viewing the diagram in interactive Python environments like Jupyter Notebooks and Google Colabs. Also the user needs internet connection to properly show the diagram in the HTML.

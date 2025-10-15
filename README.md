@@ -1,185 +1,480 @@
 # mpvis
 
-A Python package for Multi-Perspective Process Visualization of event logs
+**Multi-Perspective Process Visualization for Event Logs**
 
-# Index
+mpvis is a Python library for discovering and visualizing business process models from event logs. It provides powerful tools to create multi-perspective Directly-Follows Graphs (DFG) and multi-dimensional Directed-Rooted Trees (DRT), enabling comprehensive process analysis across multiple dimensions including time, cost, quality, and flexibility.
 
+## Table of Contents
+
+- [Features](#features)
 - [Installation](#installation)
-- [Documentation](#documentation)
-  - [Event Log Preprocessing](#preprocessing)
-  - [Multi-Perspective Directly-Follows Graph (Discovery / Visualization)](#multi-perspective-directly-follows-graph-discovery--visualization)
-  - [Multi-Dimensional Directed-Rooted Tree (Discovery / Visualization)](#multi-dimensional-directed-rooted-tree-discovery--visualization)
+- [Quick Start](#quick-start)
+- [API Reference](#api-reference)
+  - [Event Log Formatting](#event-log-formatting)
+  - [Event Log Preprocessing](#event-log-preprocessing)
+  - [Multi-Perspective Directly-Follows Graph (MPDFG)](#multi-perspective-directly-follows-graph-mpdfg)
+  - [Multi-Dimensional Directed-Rooted Tree (MDDRT)](#multi-dimensional-directed-rooted-tree-mddrt)
 - [Examples](#examples)
+- [Requirements](#requirements)
 
-# Installation
+## Features
 
-This package runs under Python 3.9+, use [pip](https://pip.pypa.io/en/stable/) to install.
+- **Event Log Formatting**: Standardize your event logs to the pm4py format
+- **Log Preprocessing**: Filter and group activities for better visualization
+- **Multi-Perspective DFG**: Discover process flows with frequency, time, and cost perspectives
+- **Multi-Dimensional DRT**: Visualize process trees with quality and flexibility metrics
+- **Flexible Visualization**: Export diagrams in multiple formats (SVG, PNG, PDF, etc.)
+- **Interactive Support**: View diagrams directly in Jupyter Notebooks and Google Colab
 
-```sh
+## Installation
+
+mpvis requires Python 3.9 or higher. Install using pip:
+
+```bash
 pip install mpvis
 ```
 
-> **IMPORTANT**
-> To render and save generated diagrams, you will also need to install [Graphviz](https://www.graphviz.org)
+### Additional Requirements
 
-# Documentation
+To render and save generated diagrams, you must install [Graphviz](https://www.graphviz.org):
 
-This package has three main modules:
+**macOS** (using Homebrew):
 
-- `preprocessing` has functionalities for log pruning based on top _k_ variants and manual grouping of log activities.
-- `mpdfg` to discover and visualize Multi-Perspective Directly-Follows Graphs (DFG)
-- `mddrt` to discover and visualize Multi-Dimensional Directed-Rooted Trees (DRT)
-
-## Event Log Preprocessing
-
-### Format event log
-
-Using `mpvis.log_formatter` you can format your own initial event log with the corresponding column names, based on [pm4py](https://pm4py.fit.fraunhofer.de) standard way of naming logs columns.
-
-The format dictionary to pass as argument to this function needs to have the following structure:
-
-```py
-{
-    "case:concept:name": <Case Id>, # required
-    "concept:name": <Activity Id>, # required
-    "time:timestamp": <Timestamp>, # required
-    "start_timestamp": <Start Timestamp>, # optional
-    "org:resource": <Resource>, # optional
-    "cost:total": <Cost>, # optional
-}
+```bash
+brew install graphviz
 ```
 
-Each value of the dictionary needs to match the corresponding column name of the initial event log. If `start_timestamp`, `org:resource` and `cost:total` are not present in your event log, you can leave its values as blank strings.
+**Ubuntu/Debian**:
 
-```py
+```bash
+sudo apt-get install graphviz
+```
+
+**Windows**:
+Download and install from [graphviz.org](https://www.graphviz.org/download/)
+
+## Quick Start
+
+```python
 import mpvis
 import pandas as pd
 
-raw_event_log = pd.read_csv("raw_event_log.csv")
+# Load your event log
+raw_log = pd.read_csv("event_log.csv")
 
-format_dictionary = {
+# Format the log
+format_dict = {
     "case:concept:name": "Case ID",
     "concept:name": "Activity",
-    "time:timestamp": "Complete",
-    "start_timestamp": "Start",
-    "org:resource": "Resource",
-    "cost:total": "Cost",
+    "time:timestamp": "Timestamp",
+    "start_timestamp": "",  # Optional
+    "org:resource": "",     # Optional
+    "cost:total": ""        # Optional
 }
+event_log = mpvis.log_formatter(raw_log, format_dict)
 
-event_log = mpvis.log_formatter(raw_event_log, format_dictionary)
-```
-
-### Manual log grouping of activities
-
-Groups specified activities in a process log into a single activity group. Every activity name in `activities_to_group` needs to be in the event log activity column.
-
-```py
-from mpvis import preprocessing
-
-activities_to_group = ["A", "B", "C"]
-
-manual_grouped_log = preprocessing.manual_log_grouping(
-    event_log=event_log,
-    activities_to_group=activities_to_group,
-    group_name="Grouped Activities" # Optional
-    )
-```
-
-### Log pruning by number of variants
-
-This function filters the event log to keep only the top k variants based on their frequency. Variants are different sequences of activities in the event log.
-
-```py
-from mpvis import preprocessing
-
-#k is the number of variants to keep
-pruned_log_by_variants = preprocessing.prune_log_based_on_top_variants(event_log, k=3)
-```
-
-## Multi-Perspective Directly-Follows Graph (Discovery / Visualization)
-
-### Discover Multi Perspective DFG
-
-Discovers a multi-perspective Directly-Follows Graph (DFG) from a log.
-
-```py
+# Discover a Multi-Perspective DFG
 from mpvis import mpdfg
 
-(
+dfg, start_activities, end_activities = mpdfg.discover_multi_perspective_dfg(
+    event_log,
+    calculate_frequency=True,
+    calculate_time=True,
+    calculate_cost=True
+)
+
+# Visualize the DFG
+mpdfg.view_multi_perspective_dfg(
+    dfg,
+    start_activities,
+    end_activities,
+    visualize_frequency=True,
+    visualize_time=True,
+    visualize_cost=True
+)
+```
+
+## API Reference
+
+### Event Log Formatting
+
+#### `log_formatter()`
+
+Formats your event log to comply with the pm4py standard column naming convention.
+
+```python
+mpvis.log_formatter(log, log_format, timestamp_format=None)
+```
+
+**Parameters:**
+
+- `log` (pd.DataFrame): The raw event log DataFrame
+- `log_format` (dict): Dictionary mapping standard column names to your log's column names
+- `timestamp_format` (str, optional): Format string for parsing timestamps (e.g., "%Y-%m-%d %H:%M:%S")
+
+**Format Dictionary Structure:**
+
+```python
+{
+    "case:concept:name": "<Your Case ID Column>",      # Required
+    "concept:name": "<Your Activity Column>",          # Required
+    "time:timestamp": "<Your Timestamp Column>",       # Required
+    "start_timestamp": "<Your Start Time Column>",     # Optional (use "" if not available)
+    "org:resource": "<Your Resource Column>",          # Optional (use "" if not available)
+    "cost:total": "<Your Cost Column>"                 # Optional (use "" if not available)
+}
+```
+
+**Returns:**
+
+- `pd.DataFrame`: Formatted event log with standardized column names
+
+**Example:**
+
+```python
+import mpvis
+import pandas as pd
+
+raw_log = pd.read_csv("process_data.csv")
+
+format_dict = {
+    "case:concept:name": "Case ID",
+    "concept:name": "Activity Name",
+    "time:timestamp": "Completion Time",
+    "start_timestamp": "Start Time",
+    "org:resource": "Resource",
+    "cost:total": "Total Cost"
+}
+
+formatted_log = mpvis.log_formatter(raw_log, format_dict)
+```
+
+---
+
+### Event Log Preprocessing
+
+#### `manual_log_grouping()`
+
+Groups multiple specified activities into a single grouped activity within the event log.
+
+```python
+from mpvis import preprocessing
+
+preprocessing.manual_log_grouping(
+    log,
+    activities_to_group,
+    group_name=None,
+    case_id_key="case:concept:name",
+    activity_id_key="concept:name",
+    start_timestamp_key="start_timestamp",
+    timestamp_key="time:timestamp"
+)
+```
+
+**Parameters:**
+
+- `log` (pd.DataFrame): The event log to process
+- `activities_to_group` (list[str]): List of activity names to group together
+- `group_name` (str, optional): Name for the grouped activity. Defaults to a concatenation of activity names
+- `case_id_key` (str, optional): Column name for case IDs. Defaults to "case:concept:name"
+- `activity_id_key` (str, optional): Column name for activity names. Defaults to "concept:name"
+- `start_timestamp_key` (str, optional): Column name for start timestamps. Defaults to "start_timestamp"
+- `timestamp_key` (str, optional): Column name for timestamps. Defaults to "time:timestamp"
+
+**Returns:**
+
+- `pd.DataFrame`: Event log with specified activities grouped
+
+**Example:**
+
+```python
+from mpvis import preprocessing
+
+# Group related activities
+activities_to_group = ["Check Documents", "Verify Documents", "Approve Documents"]
+
+grouped_log = preprocessing.manual_log_grouping(
+    event_log=event_log,
+    activities_to_group=activities_to_group,
+    group_name="Document Processing"
+)
+```
+
+---
+
+#### `prune_log_based_on_top_variants()`
+
+Filters the event log to retain only the most frequent process variants, reducing complexity while preserving the most common paths.
+
+```python
+from mpvis import preprocessing
+
+preprocessing.prune_log_based_on_top_variants(
+    log,
+    k,
+    activity_key="concept:name",
+    timestamp_key="time:timestamp",
+    case_id_key="case:concept:name"
+)
+```
+
+**Parameters:**
+
+- `log` (pd.DataFrame): The event log to prune
+- `k` (int): Number of top variants to retain
+- `activity_key` (str, optional): Column name for activities. Defaults to "concept:name"
+- `timestamp_key` (str, optional): Column name for timestamps. Defaults to "time:timestamp"
+- `case_id_key` (str, optional): Column name for case IDs. Defaults to "case:concept:name"
+
+**Returns:**
+
+- `pd.DataFrame`: Pruned event log containing only the top k variants
+
+**Example:**
+
+```python
+from mpvis import preprocessing
+
+# Keep only the top 10 most frequent variants
+pruned_log = preprocessing.prune_log_based_on_top_variants(
+    log=event_log,
+    k=10
+)
+```
+
+---
+
+### Multi-Perspective Directly-Follows Graph (MPDFG)
+
+Multi-Perspective Directly-Follows Graphs visualize the flow of activities in a process with multiple performance metrics including frequency, time, and cost.
+
+#### `discover_multi_perspective_dfg()`
+
+Discovers a multi-perspective DFG from an event log, extracting process flow information with multiple performance dimensions.
+
+```python
+from mpvis import mpdfg
+
+mpdfg.discover_multi_perspective_dfg(
+    log,
+    case_id_key="case:concept:name",
+    activity_key="concept:name",
+    timestamp_key="time:timestamp",
+    start_timestamp_key="start_timestamp",
+    cost_key="cost:total",
+    calculate_frequency=True,
+    calculate_time=True,
+    calculate_cost=True,
+    frequency_statistic="absolute-activity",
+    time_statistic="mean",
+    cost_statistic="mean"
+)
+```
+
+**Parameters:**
+
+- `log` (pd.DataFrame): The event log
+- `case_id_key` (str, optional): Column name for case IDs. Defaults to "case:concept:name"
+- `activity_key` (str, optional): Column name for activities. Defaults to "concept:name"
+- `timestamp_key` (str, optional): Column name for timestamps. Defaults to "time:timestamp"
+- `start_timestamp_key` (str, optional): Column name for start timestamps. Defaults to "start_timestamp"
+- `cost_key` (str, optional): Column name for costs. Defaults to "cost:total"
+- `calculate_frequency` (bool, optional): Whether to calculate frequencies. Defaults to True
+- `calculate_time` (bool, optional): Whether to calculate time metrics. Defaults to True
+- `calculate_cost` (bool, optional): Whether to calculate cost metrics. Defaults to True
+- `frequency_statistic` (str, optional): Frequency calculation method. Options: "absolute-activity", "absolute-case", "relative-activity", "relative-case". Defaults to "absolute-activity"
+- `time_statistic` (str, optional): Time aggregation method. Options: "mean", "sum", "max", "min", "median", "stdev". Defaults to "mean"
+- `cost_statistic` (str, optional): Cost aggregation method. Options: "mean", "sum", "max", "min", "median", "stdev". Defaults to "mean"
+
+**Returns:**
+
+- `Tuple[dict, dict, dict]`: A tuple containing:
+  - Multi-perspective DFG dictionary
+  - Start activities dictionary
+  - End activities dictionary
+
+**Example:**
+
+```python
+from mpvis import mpdfg
+
+dfg, start_activities, end_activities = mpdfg.discover_multi_perspective_dfg(
+    event_log,
+    calculate_frequency=True,
+    calculate_time=True,
+    calculate_cost=True,
+    frequency_statistic="absolute-activity",
+    time_statistic="median",
+    cost_statistic="sum"
+)
+```
+
+---
+
+#### `filter_multi_perspective_dfg_activities()`
+
+Filters activities in the DFG based on a specified metric, showing only a percentage of the most or least significant activities.
+
+```python
+from mpvis import mpdfg
+
+mpdfg.filter_multi_perspective_dfg_activities(
+    percentage,
     multi_perspective_dfg,
     start_activities,
     end_activities,
-) = mpdfg.discover_multi_perspective_dfg(
-    event_log,
-    calculate_cost=True,
-    calculate_frequency=True,
-    calculate_time=True,
-    frequency_statistic="absolute-activity", # or absolute-case, relative-activity, relative-case
-    time_statistic="mean", # or sum, max, min, stdev, median
-    cost_statistic="mean", # or sum, max, min, stdev, median
+    sort_by="frequency",
+    ascending=True
 )
-
 ```
 
-### Filter DFG by activities
+**Parameters:**
 
-Filters activities of a multi-perspective Directly-Follows Graph (DFG) diagram.
+- `percentage` (float): Percentage of activities to keep (0-100)
+- `multi_perspective_dfg` (dict): The multi-perspective DFG
+- `start_activities` (dict): Start activities dictionary
+- `end_activities` (dict): End activities dictionary
+- `sort_by` (str, optional): Metric to filter by. Options: "frequency", "time", "cost". Defaults to "frequency"
+- `ascending` (bool, optional): If True, keeps activities with lowest values; if False, keeps highest. Defaults to True
 
-```py
+**Returns:**
+
+- `dict`: Filtered multi-perspective DFG
+
+**Example:**
+
+```python
 from mpvis import mpdfg
 
-activities_filtered_multi_perspective_dfg = mpdfg.filter_multi_perspective_dfg_activities(
-    percentage=0.5,
-    dfg=multi_perspective_dfg,
+# Keep only the top 20% most frequent activities
+filtered_dfg = mpdfg.filter_multi_perspective_dfg_activities(
+    percentage=20,
+    multi_perspective_dfg=dfg,
     start_activities=start_activities,
     end_activities=end_activities,
     sort_by="frequency",
-    ascending=True,
+    ascending=True
 )
-
 ```
 
-### Filter DFG by paths
+---
 
-Filters paths of a multi-perspective Directly-Follows Graph (DFG) diagram.
+#### `filter_multi_perspective_dfg_paths()`
 
-```py
+Filters paths (edges) in the DFG based on a specified metric.
+
+```python
 from mpvis import mpdfg
 
-activities_filtered_multi_perspective_dfg = mpdfg.filter_multi_perspective_dfg_paths(
-    percentage=0.5,
-    dfg=multi_perspective_dfg,
+mpdfg.filter_multi_perspective_dfg_paths(
+    percentage,
+    multi_perspective_dfg,
+    start_activities,
+    end_activities,
+    sort_by="frequency",
+    ascending=True
+)
+```
+
+**Parameters:**
+
+- `percentage` (float): Percentage of paths to keep (0-100)
+- `multi_perspective_dfg` (dict): The multi-perspective DFG
+- `start_activities` (dict): Start activities dictionary
+- `end_activities` (dict): End activities dictionary
+- `sort_by` (str, optional): Metric to filter by. Options: "frequency", "time". Defaults to "frequency"
+- `ascending` (bool, optional): If True, keeps paths with lowest values; if False, keeps highest. Defaults to True
+
+**Returns:**
+
+- `dict`: Filtered multi-perspective DFG
+
+**Example:**
+
+```python
+from mpvis import mpdfg
+
+# Keep only the top 30% most frequent paths
+filtered_dfg = mpdfg.filter_multi_perspective_dfg_paths(
+    percentage=30,
+    multi_perspective_dfg=dfg,
     start_activities=start_activities,
     end_activities=end_activities,
     sort_by="frequency",
-    ascending=True,
+    ascending=True
 )
-
 ```
 
-### Get the DFG diagram string representation
+---
 
-Creates a string representation of a multi-perspective Directly-Follows Graph (DFG) diagram.
+#### `get_multi_perspective_dfg_string()`
 
-```py
-mpdfg_string = mpdfg.get_multi_perspective_dfg_string(
+Generates a string representation of the multi-perspective DFG diagram for programmatic use.
+
+```python
+from mpvis import mpdfg
+
+mpdfg.get_multi_perspective_dfg_string(
     multi_perspective_dfg,
     start_activities,
     end_activities,
     visualize_frequency=True,
     visualize_time=True,
     visualize_cost=True,
-    rankdir="TB", # or BT, LR, RL, etc.
-    diagram_tool="graphviz", # or mermaid
+    cost_currency="USD",
+    rankdir="TD",
+    diagram_tool="graphviz",
+    arc_thickness_by="frequency"
 )
-
 ```
 
-### View the generated DFG diagram
+**Parameters:**
 
-Allows the user to view the diagram in interactive Python environments like Jupyter and Google Colab.
+- `multi_perspective_dfg` (dict): The multi-perspective DFG
+- `start_activities` (dict): Start activities dictionary
+- `end_activities` (dict): End activities dictionary
+- `visualize_frequency` (bool, optional): Show frequency metrics. Defaults to True
+- `visualize_time` (bool, optional): Show time metrics. Defaults to True
+- `visualize_cost` (bool, optional): Show cost metrics. Defaults to True
+- `cost_currency` (str, optional): Currency symbol for costs. Defaults to "USD"
+- `rankdir` (str, optional): Graph direction. Options: "TD" (top-down), "BT" (bottom-top), "LR" (left-right), "RL" (right-left). Defaults to "TD"
+- `diagram_tool` (str, optional): Diagramming tool. Options: "graphviz", "mermaid". Defaults to "graphviz"
+- `arc_thickness_by` (str, optional): Metric for edge thickness. Options: "frequency", "time". Defaults to "frequency"
 
-```py
+**Returns:**
+
+- `str`: String representation of the DFG diagram
+
+**Note:**
+
+- Mermaid diagrams can only be saved as HTML files and require internet connection to display properly
+
+**Example:**
+
+```python
+from mpvis import mpdfg
+
+dfg_string = mpdfg.get_multi_perspective_dfg_string(
+    dfg,
+    start_activities,
+    end_activities,
+    visualize_frequency=True,
+    visualize_time=True,
+    visualize_cost=False,
+    rankdir="LR",
+    diagram_tool="graphviz"
+)
+```
+
+---
+
+#### `view_multi_perspective_dfg()`
+
+Displays the multi-perspective DFG in interactive environments like Jupyter Notebook or Google Colab.
+
+```python
+from mpvis import mpdfg
+
 mpdfg.view_multi_perspective_dfg(
     multi_perspective_dfg,
     start_activities,
@@ -187,103 +482,399 @@ mpdfg.view_multi_perspective_dfg(
     visualize_frequency=True,
     visualize_time=True,
     visualize_cost=True,
-    rankdir="TB", # or BT, LR, RL, etc.
+    cost_currency="USD",
+    rankdir="TD",
+    format="svg",
+    arc_thickness_by="frequency"
 )
 ```
 
-### Save the generated DFG diagram
+**Parameters:**
 
-```py
+- `multi_perspective_dfg` (dict): The multi-perspective DFG
+- `start_activities` (dict): Start activities dictionary
+- `end_activities` (dict): End activities dictionary
+- `visualize_frequency` (bool, optional): Show frequency metrics. Defaults to True
+- `visualize_time` (bool, optional): Show time metrics. Defaults to True
+- `visualize_cost` (bool, optional): Show cost metrics. Defaults to True
+- `cost_currency` (str, optional): Currency symbol. Defaults to "USD"
+- `rankdir` (str, optional): Graph direction. Defaults to "TD"
+- `format` (str, optional): Image format. Options: "svg", "png", "jpg", "jpeg", "webp". Defaults to "svg"
+- `arc_thickness_by` (str, optional): Metric for edge thickness. Options: "frequency", "time". Defaults to "frequency"
+
+**Returns:**
+
+- None (displays the diagram)
+
+**Note:**
+
+- Only supports Graphviz diagrams
+- Not all formats are supported in all environments
+
+**Example:**
+
+```python
+from mpvis import mpdfg
+
+mpdfg.view_multi_perspective_dfg(
+    dfg,
+    start_activities,
+    end_activities,
+    visualize_frequency=True,
+    visualize_time=True,
+    visualize_cost=True,
+    rankdir="LR",
+    format="svg"
+)
+```
+
+---
+
+#### `save_vis_multi_perspective_dfg()`
+
+Saves the multi-perspective DFG visualization to a file.
+
+```python
+from mpvis import mpdfg
+
 mpdfg.save_vis_multi_perspective_dfg(
     multi_perspective_dfg,
     start_activities,
     end_activities,
-    file_name="diagram",
+    file_name,
     visualize_frequency=True,
     visualize_time=True,
     visualize_cost=True,
-    format="png", # or pdf, webp, svg, etc.
-    rankdir="TB", # or BT, LR, RL, etc.
-    diagram_tool="graphviz", # or mermaid
+    cost_currency="USD",
+    format="svg",
+    rankdir="TD",
+    diagram_tool="graphviz",
+    arc_thickness_by="frequency"
 )
 ```
 
-# Multi-Dimensional Directed-Rooted Tree (Discovery / Visualization)
+**Parameters:**
 
-### Discover Multi-Dimensional DRT
+- `multi_perspective_dfg` (dict): The multi-perspective DFG
+- `start_activities` (dict): Start activities dictionary
+- `end_activities` (dict): End activities dictionary
+- `file_name` (str): Output file path (without extension)
+- `visualize_frequency` (bool, optional): Show frequency metrics. Defaults to True
+- `visualize_time` (bool, optional): Show time metrics. Defaults to True
+- `visualize_cost` (bool, optional): Show cost metrics. Defaults to True
+- `cost_currency` (str, optional): Currency symbol. Defaults to "USD"
+- `format` (str, optional): Output format. Options: "svg", "png", "pdf", "jpg", etc. See [Graphviz outputs](https://graphviz.org/docs/outputs). Defaults to "svg"
+- `rankdir` (str, optional): Graph direction. Defaults to "TD"
+- `diagram_tool` (str, optional): Diagramming tool. Options: "graphviz", "mermaid". Defaults to "graphviz"
+- `arc_thickness_by` (str, optional): Metric for edge thickness. Options: "frequency", "time". Defaults to "frequency"
 
-Discovers and constructs a multi-dimensional Directly Rooted Tree (DRT) from the provided event log.
+**Returns:**
 
-This function analyzes an event log and creates a multi-dimensional Directly Rooted Tree (DRT)
-representing the process model. The DRT is built based on various dimensions such as time, cost,
-quality, and flexibility, according to the specified parameters.
+- None (saves the file)
 
-```py
+**Note:**
+
+- Mermaid diagrams are saved as HTML files only
+
+**Example:**
+
+```python
+from mpvis import mpdfg
+
+mpdfg.save_vis_multi_perspective_dfg(
+    dfg,
+    start_activities,
+    end_activities,
+    file_name="process_diagram",
+    visualize_frequency=True,
+    visualize_time=True,
+    visualize_cost=True,
+    format="png",
+    rankdir="LR"
+)
+```
+
+---
+
+### Multi-Dimensional Directed-Rooted Tree (MDDRT)
+
+Multi-Dimensional Directed-Rooted Trees provide hierarchical process visualizations with multiple performance dimensions including time, cost, quality, and flexibility.
+
+#### `discover_multi_dimensional_drt()`
+
+Discovers and constructs a multi-dimensional DRT from an event log.
+
+```python
+from mpvis import mddrt
+
+mddrt.discover_multi_dimensional_drt(
+    log,
+    calculate_time=True,
+    calculate_cost=True,
+    calculate_quality=True,
+    calculate_flexibility=True,
+    group_activities=False,
+    show_names=False,
+    case_id_key="case:concept:name",
+    activity_key="concept:name",
+    timestamp_key="time:timestamp",
+    start_timestamp_key="start_timestamp",
+    cost_key="cost:total"
+)
+```
+
+**Parameters:**
+
+- `log` (pd.DataFrame): The event log
+- `calculate_time` (bool, optional): Include time dimension. Defaults to True
+- `calculate_cost` (bool, optional): Include cost dimension. Defaults to True
+- `calculate_quality` (bool, optional): Include quality dimension. Defaults to True
+- `calculate_flexibility` (bool, optional): Include flexibility dimension. Defaults to True
+- `group_activities` (bool, optional): Group sequential single-path activities. Defaults to False
+- `show_names` (bool, optional): Show names of grouped activities. Defaults to False
+- `case_id_key` (str, optional): Column name for case IDs. Defaults to "case:concept:name"
+- `activity_key` (str, optional): Column name for activities. Defaults to "concept:name"
+- `timestamp_key` (str, optional): Column name for timestamps. Defaults to "time:timestamp"
+- `start_timestamp_key` (str, optional): Column name for start timestamps. Defaults to "start_timestamp"
+- `cost_key` (str, optional): Column name for costs. Defaults to "cost:total"
+
+**Returns:**
+
+- `TreeNode`: Root node of the multi-dimensional DRT
+
+**Example:**
+
+```python
 from mpvis import mddrt
 
 drt = mddrt.discover_multi_dimensional_drt(
     event_log,
-    calculate_cost=True,
     calculate_time=True,
-    calculate_flexibility=True,
+    calculate_cost=True,
     calculate_quality=True,
-    group_activities=False,
+    calculate_flexibility=True,
+    group_activities=True,
+    show_names=True
+)
+```
+
+---
+
+#### `group_drt_activities()`
+
+Groups sequential activities that follow a single-child path in the DRT, simplifying the tree structure.
+
+```python
+from mpvis import mddrt
+
+mddrt.group_drt_activities(
+    multi_dimensional_drt,
     show_names=False
 )
 ```
 
-### Get the DRT diagram string representation
+**Parameters:**
 
-Generates a string representation of a multi-dimensional directly rooted tree (DRT) diagram.
+- `multi_dimensional_drt` (TreeNode): Root of the multi-dimensional DRT
+- `show_names` (bool, optional): Show names of grouped activities. Defaults to False
 
-```py
-mddrt_string = mddrt.get_multi_dimension_drt_string(
+**Returns:**
+
+- `TreeNode`: Root of the grouped multi-dimensional DRT
+
+**Example:**
+
+```python
+from mpvis import mddrt
+
+# First discover the DRT
+drt = mddrt.discover_multi_dimensional_drt(event_log)
+
+# Then group activities
+grouped_drt = mddrt.group_drt_activities(drt, show_names=True)
+```
+
+---
+
+#### `get_multi_dimensional_drt_string()`
+
+Generates a string representation of the multi-dimensional DRT diagram.
+
+```python
+from mpvis import mddrt
+
+mddrt.get_multi_dimensional_drt_string(
     multi_dimensional_drt,
     visualize_time=True,
     visualize_cost=True,
     visualize_quality=True,
-    visualize_flexibility=True
+    visualize_flexibility=True,
+    node_measures=["total"],
+    arc_measures=[]
 )
 ```
 
-### View the generated DRT diagram
+**Parameters:**
 
-Allows the user to view the diagram in interactive Python environments like Jupyter and Google Colab.
+- `multi_dimensional_drt` (TreeNode): Root of the multi-dimensional DRT
+- `visualize_time` (bool, optional): Include time dimension. Defaults to True
+- `visualize_cost` (bool, optional): Include cost dimension. Defaults to True
+- `visualize_quality` (bool, optional): Include quality dimension. Defaults to True
+- `visualize_flexibility` (bool, optional): Include flexibility dimension. Defaults to True
+- `node_measures` (list, optional): Node metrics to display. Options: "total", "consumed", "remaining". Defaults to ["total"]
+- `arc_measures` (list, optional): Arc metrics to display. Options: "avg", "min", "max". Defaults to []
 
-```py
+**Returns:**
+
+- `str`: String representation of the DRT diagram
+
+**Example:**
+
+```python
+from mpvis import mddrt
+
+drt_string = mddrt.get_multi_dimensional_drt_string(
+    drt,
+    visualize_time=True,
+    visualize_cost=True,
+    visualize_quality=False,
+    visualize_flexibility=False,
+    node_measures=["total", "consumed"],
+    arc_measures=["avg", "min", "max"]
+)
+```
+
+---
+
+#### `view_multi_dimensional_drt()`
+
+Displays the multi-dimensional DRT in interactive environments.
+
+```python
+from mpvis import mddrt
+
 mddrt.view_multi_dimensional_drt(
-    multi_dimensional_drt
+    multi_dimensional_drt,
     visualize_time=True,
     visualize_cost=True,
     visualize_quality=True,
     visualize_flexibility=True,
-    node_measures=["total"], # accepts also "consumed" and "remaining"
-    arc_measures=[], # accepts "avg", "min" and "max", or you can keep this argument empty
-    format="svg" # Format value should be a valid image extension like 'jpg', 'png', 'jpeq' or 'webp
+    node_measures=["total"],
+    arc_measures=[],
+    format="svg"
 )
 ```
 
-> **WARNING**
-> Not all output file formats of Graphviz are available to display in environments like Jupyter Notebook or Google Colab.
+**Parameters:**
 
-### Save the generated DRT diagram
+- `multi_dimensional_drt` (TreeNode): Root of the multi-dimensional DRT
+- `visualize_time` (bool, optional): Include time dimension. Defaults to True
+- `visualize_cost` (bool, optional): Include cost dimension. Defaults to True
+- `visualize_quality` (bool, optional): Include quality dimension. Defaults to True
+- `visualize_flexibility` (bool, optional): Include flexibility dimension. Defaults to True
+- `node_measures` (list, optional): Node metrics to display. Options: "total", "consumed", "remaining". Defaults to ["total"]
+- `arc_measures` (list, optional): Arc metrics to display. Options: "avg", "min", "max". Defaults to []
+- `format` (str, optional): Image format. Options: "svg", "png", "jpg", "jpeg", "webp". Defaults to "svg"
 
-Saves a visualization of a multi-dimensional directly rooted tree (DRT) to a file.
+**Returns:**
 
-```py
+- None (displays the diagram)
+
+**Note:**
+
+- Not all output formats are supported in all interactive environments
+
+**Example:**
+
+```python
+from mpvis import mddrt
+
+mddrt.view_multi_dimensional_drt(
+    drt,
+    visualize_time=True,
+    visualize_cost=True,
+    visualize_quality=True,
+    visualize_flexibility=True,
+    node_measures=["total", "remaining"],
+    arc_measures=["avg"],
+    format="svg"
+)
+```
+
+---
+
+#### `save_vis_multi_dimensional_drt()`
+
+Saves the multi-dimensional DRT visualization to a file.
+
+```python
+from mpvis import mddrt
+
 mddrt.save_vis_multi_dimensional_drt(
-    multi_dimensional_drt
-    file_path="diagram",
+    multi_dimensional_drt,
+    file_path,
     visualize_time=True,
     visualize_cost=True,
     visualize_quality=True,
     visualize_flexibility=True,
-    node_measures=["total"], # accepts also "consumed" and "remaining"
-    arc_measures=[], # accepts "avg", "min" and "max", or you can keep this argument empty
-    format="svg", # or pdf, webp, svg, etc.
+    node_measures=["total"],
+    arc_measures=[],
+    format="svg"
 )
 ```
 
-# Examples
+**Parameters:**
 
-Checkout [Examples](https://github.com/nicoabarca/mpvis/tree/main/examples) to see the package being used to visualize an event log of a mining process.
+- `multi_dimensional_drt` (TreeNode): Root of the multi-dimensional DRT
+- `file_path` (str): Output file path (without extension)
+- `visualize_time` (bool, optional): Include time dimension. Defaults to True
+- `visualize_cost` (bool, optional): Include cost dimension. Defaults to True
+- `visualize_quality` (bool, optional): Include quality dimension. Defaults to True
+- `visualize_flexibility` (bool, optional): Include flexibility dimension. Defaults to True
+- `node_measures` (list, optional): Node metrics to display. Options: "total", "consumed", "remaining". Defaults to ["total"]
+- `arc_measures` (list, optional): Arc metrics to display. Options: "avg", "min", "max". Defaults to []
+- `format` (str, optional): Output format. Options: "svg", "png", "pdf", "jpg", etc. Defaults to "svg"
+
+**Returns:**
+
+- None (saves the file)
+
+**Example:**
+
+```python
+from mpvis import mddrt
+
+mddrt.save_vis_multi_dimensional_drt(
+    drt,
+    file_path="process_tree",
+    visualize_time=True,
+    visualize_cost=True,
+    visualize_quality=True,
+    visualize_flexibility=True,
+    node_measures=["total", "consumed", "remaining"],
+    arc_measures=["avg", "max"],
+    format="png"
+)
+```
+
+---
+
+## Examples
+
+For comprehensive examples demonstrating mpvis capabilities with real-world event logs, check out the [Examples](https://github.com/nicoabarca/mpvis/tree/main/examples) directory in the GitHub repository.
+
+The examples include:
+
+- BPI Challenge datasets
+- Hospital process analysis
+- IT incident management
+- Manufacturing processes
+- And more...
+
+## Requirements
+
+- Graphviz (system installation)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
