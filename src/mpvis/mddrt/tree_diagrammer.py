@@ -165,9 +165,9 @@ class DirectlyRootedTreeDiagrammer:
             for dimension in self.dimensions_to_diagram:
                 content += self.build_link_dimension_section(dimension, node)
 
-        # Wrap the table with a spacer to push it right
+        # Wrap the table with a spacer to push it right and add vertical spacing
         table_content = GRAPHVIZ_ARC_TABLE.format(content)
-        return f'<table border="0" cellborder="0" cellspacing="0" cellpadding="0"><tr><td width="20"></td><td>{table_content}</td></tr></table>'
+        return f'<table border="0" cellborder="0" cellspacing="0" cellpadding="0"><tr><td height="10"></td></tr><tr><td width="10"></td><td>{table_content}</td></tr><tr><td height="10"></td></tr></table>'
 
     def build_link_dimension_section(
         self,
