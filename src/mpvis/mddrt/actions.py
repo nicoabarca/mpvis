@@ -103,8 +103,16 @@ def get_multi_dimensional_drt_string(
     visualize_cost: bool = True,
     visualize_quality: bool = True,
     visualize_flexibility: bool = True,
-    node_measures: list[Literal["total", "consumed", "remaining"]] = ["total"],
-    arc_measures: list[Literal["avg", "min", "max"]] = [],
+    node_measures: (
+        list[Literal["total", "consumed", "remaining"]]
+        | dict[Literal["cost", "time", "flexibility", "quality"], list[Literal["total", "consumed", "remaining"]]]
+        | None
+    ) = None,
+    arc_measures: (
+        list[Literal["avg", "min", "max"]]
+        | dict[Literal["cost", "time", "flexibility", "quality"], list[Literal["avg", "min", "max"]]]
+        | None
+    ) = None,
 ) -> str:
     """
     Generates a string representation of a multi-dimensional directly rooted tree (DRT) diagram.
@@ -115,19 +123,34 @@ def get_multi_dimensional_drt_string(
         visualize_cost (bool, optional): Whether to include the cost dimension in the visualization. Defaults to True.
         visualize_quality (bool, optional): Whether to include the quality dimension in the visualization. Defaults to True.
         visualize_flexibility (bool, optional): Whether to include the flexibility dimension in the visualization. Defaults to True.
-        node_measures (list[Literal["total", "consumed", "remaining"]], optional): The measures to include for each node in the visualization.
-            - "total": Total measure of the node.
-            - "consumed": Consumed measure of the node.
-            - "remaining": Remaining measure of the node.
-            Defaults to ["total"].
-        arc_measures (list[Literal["avg", "min", "max"]], optional): The measures to include for each arc in the visualization.
-            - "avg": Average measure of the arc.
-            - "min": Minimum measure of the arc.
-            - "max": Maximum measure of the arc.
-            Defaults to [].
+        node_measures (list or dict, optional): The measures to include for nodes in the visualization.
+            Can be either:
+            - A list (legacy): Applied to all dimensions. E.g., ["total", "consumed"]
+            - A dict (new): Per-dimension configuration. E.g., {"time": ["total"], "cost": ["consumed", "remaining"]}
+            - None: Uses default ["total"] for all dimensions
+            Available measures: "total", "consumed", "remaining"
+        arc_measures (list or dict, optional): The measures to include for arcs in the visualization.
+            Can be either:
+            - A list (legacy): Applied to all dimensions. E.g., ["avg", "min", "max"]
+            - A dict (new): Per-dimension configuration. E.g., {"time": ["min", "max"], "cost": ["avg"]}
+            - None: No arc measures shown
+            Available measures: "avg", "min", "max"
 
     Returns:
         str: A string representation of the multi-dimensional DRT diagram.
+
+    Examples:
+        >>> # Legacy usage (backward compatible)
+        >>> drt_str = get_multi_dimensional_drt_string(
+        ...     drt, node_measures=["total"], arc_measures=["avg", "min", "max"]
+        ... )
+        >>>
+        >>> # New granular usage
+        >>> drt_str = get_multi_dimensional_drt_string(
+        ...     drt,
+        ...     node_measures={"time": ["total"], "cost": [], "quality": ["consumed"]},
+        ...     arc_measures={"time": ["min", "max"], "cost": ["avg"]}
+        ... )
 
     """
     diagrammer = DirectlyRootedTreeDiagrammer(
@@ -148,8 +171,16 @@ def view_multi_dimensional_drt(
     visualize_cost: bool = True,
     visualize_quality: bool = True,
     visualize_flexibility: bool = True,
-    node_measures: list[Literal["total", "consumed", "remaining"]] = ["total"],
-    arc_measures: list[Literal["avg", "min", "max"]] = [],
+    node_measures: (
+        list[Literal["total", "consumed", "remaining"]]
+        | dict[Literal["cost", "time", "flexibility", "quality"], list[Literal["total", "consumed", "remaining"]]]
+        | None
+    ) = None,
+    arc_measures: (
+        list[Literal["avg", "min", "max"]]
+        | dict[Literal["cost", "time", "flexibility", "quality"], list[Literal["avg", "min", "max"]]]
+        | None
+    ) = None,
     format="svg",
 ) -> None:
     """
@@ -162,22 +193,37 @@ def view_multi_dimensional_drt(
         visualize_quality (bool, optional): Whether to include the quality dimension in the visualization. Defaults to True.
         visualize_flexibility (bool, optional): Whether to include the flexibility dimension in the visualization. Defaults to True.
         format (str, optional): The file format of the visualization output (e.g., "jpg", "png", "jpeg", "svg", "webp"). Defaults to "svg".
-        node_measures (list[Literal["total", "consumed", "remaining"]], optional): The measures to include for each node in the visualization.
-            - "total": Total measure of the node.
-            - "consumed": Consumed measure of the node.
-            - "remaining": Remaining measure of the node.
-            Defaults to ["total"].
-        arc_measures (list[Literal["avg", "min", "max"]], optional): The measures to include for each arc in the visualization.
-            - "avg": Average measure of the arc.
-            - "min": Minimum measure of the arc.
-            - "max": Maximum measure of the arc.
-            Defaults to [].
+        node_measures (list or dict, optional): The measures to include for nodes in the visualization.
+            Can be either:
+            - A list (legacy): Applied to all dimensions. E.g., ["total", "consumed"]
+            - A dict (new): Per-dimension configuration. E.g., {"time": ["total"], "cost": ["consumed", "remaining"]}
+            - None: Uses default ["total"] for all dimensions
+            Available measures: "total", "consumed", "remaining"
+        arc_measures (list or dict, optional): The measures to include for arcs in the visualization.
+            Can be either:
+            - A list (legacy): Applied to all dimensions. E.g., ["avg", "min", "max"]
+            - A dict (new): Per-dimension configuration. E.g., {"time": ["min", "max"], "cost": ["avg"]}
+            - None: No arc measures shown
+            Available measures: "avg", "min", "max"
 
     Raises:
         IOError: If the temporary file cannot be created or read.
 
     Returns:
         None
+
+    Examples:
+        >>> # Legacy usage (backward compatible)
+        >>> view_multi_dimensional_drt(
+        ...     drt, node_measures=["total"], arc_measures=["avg", "min", "max"]
+        ... )
+        >>>
+        >>> # New granular usage - different measures per dimension
+        >>> view_multi_dimensional_drt(
+        ...     drt,
+        ...     node_measures={"time": ["total"], "cost": [], "quality": ["consumed"]},
+        ...     arc_measures={"time": ["min", "max"], "cost": ["avg"]}
+        ... )
 
     """
     drt_string = get_multi_dimensional_drt_string(
@@ -199,8 +245,16 @@ def save_vis_multi_dimensional_drt(
     visualize_cost: bool = True,
     visualize_quality: bool = True,
     visualize_flexibility: bool = True,
-    node_measures: list[Literal["total", "consumed", "remaining"]] = ["total"],
-    arc_measures: list[Literal["avg", "min", "max"]] = [],
+    node_measures: (
+        list[Literal["total", "consumed", "remaining"]]
+        | dict[Literal["cost", "time", "flexibility", "quality"], list[Literal["total", "consumed", "remaining"]]]
+        | None
+    ) = None,
+    arc_measures: (
+        list[Literal["avg", "min", "max"]]
+        | dict[Literal["cost", "time", "flexibility", "quality"], list[Literal["avg", "min", "max"]]]
+        | None
+    ) = None,
     format: str = "svg",
 ):
     """
@@ -214,19 +268,35 @@ def save_vis_multi_dimensional_drt(
         visualize_quality (bool, optional): Whether to include the quality dimension in the visualization. Defaults to True.
         visualize_flexibility (bool, optional): Whether to include the flexibility dimension in the visualization. Defaults to True.
         format (str, optional): The file format for the visualization output (e.g., "jpg", "jpeg", "png", "webp", "svg"). Defaults to "svg".
-        node_measures (list[Literal["total", "consumed", "remaining"]], optional): The measures to include for each node in the visualization.
-            - "total": Total measure of the node.
-            - "consumed": Consumed measure of the node.
-            - "remaining": Remaining measure of the node.
-            Defaults to ["total"].
-        arc_measures (list[Literal["avg", "min", "max"]], optional): The measures to include for each arc in the visualization.
-            - "avg": Average measure of the arc.
-            - "min": Minimum measure of the arc.
-            - "max": Maximum measure of the arc.
-            Defaults to [].
+        node_measures (list or dict, optional): The measures to include for nodes in the visualization.
+            Can be either:
+            - A list (legacy): Applied to all dimensions. E.g., ["total", "consumed"]
+            - A dict (new): Per-dimension configuration. E.g., {"time": ["total"], "cost": ["consumed", "remaining"]}
+            - None: Uses default ["total"] for all dimensions
+            Available measures: "total", "consumed", "remaining"
+        arc_measures (list or dict, optional): The measures to include for arcs in the visualization.
+            Can be either:
+            - A list (legacy): Applied to all dimensions. E.g., ["avg", "min", "max"]
+            - A dict (new): Per-dimension configuration. E.g., {"time": ["min", "max"], "cost": ["avg"]}
+            - None: No arc measures shown
+            Available measures: "avg", "min", "max"
 
     Returns:
         None
+
+    Examples:
+        >>> # Legacy usage (backward compatible)
+        >>> save_vis_multi_dimensional_drt(
+        ...     drt, "output.svg", node_measures=["total"], arc_measures=["avg"]
+        ... )
+        >>>
+        >>> # New granular usage - show only specific measures per dimension
+        >>> save_vis_multi_dimensional_drt(
+        ...     drt,
+        ...     "output.svg",
+        ...     node_measures={"time": ["total"], "cost": []},
+        ...     arc_measures={"time": ["min", "max"], "cost": ["avg"]}
+        ... )
 
     """
     drt_string = get_multi_dimensional_drt_string(

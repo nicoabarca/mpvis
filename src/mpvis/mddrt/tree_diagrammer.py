@@ -46,6 +46,10 @@ METRIC = Literal[
     "waiting",
 ]
 
+DIMENSION = Literal["cost", "time", "flexibility", "quality"]
+NODE_MEASURE = Literal["total", "consumed", "remaining"]
+ARC_MEASURE = Literal["avg", "min", "max"]
+
 
 class DirectlyRootedTreeDiagrammer:
     def __init__(
@@ -55,8 +59,8 @@ class DirectlyRootedTreeDiagrammer:
         visualize_cost: bool = True,
         visualize_quality: bool = True,
         visualize_flexibility: bool = True,
-        node_measures: list[Literal["total", "consumed", "remaining"]] = ["total"],
-        arc_measures: list[Literal["avg", "min", "max"]] = [],
+        node_measures: list[NODE_MEASURE] | dict[DIMENSION, list[NODE_MEASURE]] = None,
+        arc_measures: list[ARC_MEASURE] | dict[DIMENSION, list[ARC_MEASURE]] = None,
         rankdir: str = "TB",
     ) -> None:
         self.tree_root = tree_root
@@ -66,12 +70,71 @@ class DirectlyRootedTreeDiagrammer:
             visualize_quality,
             visualize_flexibility,
         )
-        self.node_measures = node_measures if node_measures != [] else ["total"]
-        self.arc_measures = arc_measures
         self.rankdir = rankdir
         self.diagram = graphviz.Digraph("mddrt", comment="Multi-Dimensional Directed Rooted Tree")
         self.dimensions_min_and_max = dimensions_min_and_max(self.tree_root)
+
+        # Convert measures to per-dimension dictionaries for unified handling
+        self.node_measures_per_dimension = self._normalize_measures(
+            node_measures, default_list=["total"]
+        )
+        self.arc_measures_per_dimension = self._normalize_measures(
+            arc_measures, default_list=[]
+        )
+
         self.build_diagram()
+
+    def _normalize_measures(
+        self,
+        measures: list | dict | None,
+        default_list: list,
+    ) -> dict[DIMENSION, list]:
+        """
+        Normalize measure parameters to per-dimension dictionary format.
+
+        Handles backward compatibility by converting list format to dict format.
+        If measures is None, uses default_list ONLY for dimensions that are visualized.
+        If measures is a list, applies it to all dimensions.
+        If measures is a dict, uses it directly (respects explicit empty lists).
+
+        Args:
+            measures: Either a list of measures (legacy), a dict of per-dimension measures (new),
+                     or None (use default for visualized dimensions only)
+            default_list: Default list to use when measures is None
+
+        Returns:
+            Dictionary mapping each dimension to its list of measures
+        """
+        all_dimensions: list[DIMENSION] = ["cost", "time", "flexibility", "quality"]
+
+        # Handle None case - use default ONLY for visualized dimensions
+        if measures is None:
+            result = {}
+            for dim in all_dimensions:
+                # Only apply default to dimensions that are being visualized
+                if dim in self.dimensions_to_diagram:
+                    result[dim] = default_list.copy()
+                else:
+                    result[dim] = []
+            return result
+
+        # Handle list case (legacy) - apply to all dimensions
+        if isinstance(measures, list):
+            # Empty list means no measures for any dimension
+            measure_list = measures if measures else default_list
+            return {dim: measure_list.copy() for dim in all_dimensions}
+
+        # Handle dict case (new) - use per-dimension configuration
+        # Respects explicit empty lists in the dict
+        if isinstance(measures, dict):
+            result = {}
+            for dim in all_dimensions:
+                # Use specified measures for dimension, or empty list if not specified
+                result[dim] = measures.get(dim, []).copy() if dim in measures else []
+            return result
+
+        # Fallback for unexpected types
+        return {dim: default_list.copy() for dim in all_dimensions}
 
     def build_diagram(self) -> None:
         self.diagram.graph_attr["rankdir"] = self.rankdir
@@ -92,9 +155,21 @@ class DirectlyRootedTreeDiagrammer:
         self.diagram.node(str(node.id), label=f"<{state_label}>", shape="none")
 
     def build_state_label(self, node: TreeNode) -> str:
+        """
+        Build the complete state node label.
+
+        If no dimensions have measures configured, returns an empty string
+        to avoid creating invalid empty HTML tables.
+        """
         content = ""
         for dimension in self.dimensions_to_diagram:
             content += self.build_state_row_string(dimension, node)
+
+        # If no content was generated, return empty string (no node label)
+        # This prevents Graphviz syntax errors from empty tables
+        if not content.strip():
+            return ""
+
         return GRAPHVIZ_STATE_NODE.format(content)
 
     def build_state_row_string(
@@ -102,6 +177,19 @@ class DirectlyRootedTreeDiagrammer:
         dimension: Literal["cost", "time", "flexibility", "quality"],
         node: TreeNode,
     ) -> str:
+        """
+        Build a state node row for a specific dimension.
+
+        Uses per-dimension node measures to determine what to display.
+        """
+        # Get measures configured for this specific dimension
+        measures_for_dimension = self.node_measures_per_dimension.get(dimension, [])
+
+        # If no measures are configured for this dimension, skip it entirely
+        if not measures_for_dimension:
+            return ""
+
+        # Calculate values for all potential measures
         avg_total_case = (
             self.format_value("total_case", dimension, node)
             if dimension != "time"
@@ -117,22 +205,26 @@ class DirectlyRootedTreeDiagrammer:
             if dimension != "time"
             else self.format_value("lead_remainder", dimension, node)
         )
+
+        # Build dimension row with only configured measures
         dimension_row = f"{dimension.capitalize()}<br/>"
         dimension_row += (
             f"Avg. {self.build_dimension_row_string(dimension, 'total')}: {avg_total_case}<br/>"
-            if "total" in self.node_measures
+            if "total" in measures_for_dimension
             else ""
         )
         dimension_row += (
             f"Avg. {self.build_dimension_row_string(dimension, 'consumed')}: {avg_consumed}<br/>"
-            if "consumed" in self.node_measures
+            if "consumed" in measures_for_dimension
             else ""
         )
         dimension_row += (
             f"Avg. {self.build_dimension_row_string(dimension, 'remaining')}: {avg_remaining}<br/>"
-            if "remaining" in self.node_measures
+            if "remaining" in measures_for_dimension
             else ""
         )
+
+        # Calculate background color based on total measure
         data = node.dimensions_data[dimension]
         bg_color = background_color(
             (data["total_case"] if dimension != "time" else data["lead_case"]) / node.frequency,
@@ -160,8 +252,11 @@ class DirectlyRootedTreeDiagrammer:
         activity_header = f"{node_name} ({node.frequency})"
         content = GRAPHVIZ_ARC_HEADER.format(activity_header)
 
-        # Add dimension sections if arc_measures are enabled
-        if len(self.arc_measures) > 0:
+        # Add dimension sections if arc_measures are enabled for any dimension
+        has_arc_measures = any(
+            len(measures) > 0 for measures in self.arc_measures_per_dimension.values()
+        )
+        if has_arc_measures:
             for dimension in self.dimensions_to_diagram:
                 content += self.build_link_dimension_section(dimension, node)
 
@@ -174,10 +269,16 @@ class DirectlyRootedTreeDiagrammer:
         dimension: Literal["cost", "time", "flexibility", "quality"],
         node: TreeNode,
     ) -> str:
-        """Build a table section for a specific dimension with header and data rows."""
-        if len(self.arc_measures) == 0 or not any(
-            item in ["avg", "max", "min"] for item in self.arc_measures
-        ):
+        """
+        Build a table section for a specific dimension with header and data rows.
+
+        Uses per-dimension arc measures to determine what to display.
+        """
+        # Get measures configured for this specific dimension
+        measures_for_dimension = self.arc_measures_per_dimension.get(dimension, [])
+
+        # If no measures are configured for this dimension, skip it entirely
+        if not measures_for_dimension:
             return ""
 
         # Get background color for dimension header
@@ -189,6 +290,7 @@ class DirectlyRootedTreeDiagrammer:
 
         # Add data rows based on dimension type
         if dimension in ["time", "cost"]:
+            # Calculate values for all potential measures
             avg_total = (
                 self.format_value("total", dimension, node)
                 if dimension != "time"
@@ -197,18 +299,21 @@ class DirectlyRootedTreeDiagrammer:
             maximum = self.format_value("max", dimension, node)
             minimum = self.format_value("min", dimension, node)
 
-            if "avg" in self.arc_measures:
+            # Add rows only for configured measures
+            if "avg" in measures_for_dimension:
                 section_content += GRAPHVIZ_ARC_DATA_ROW.format("AVG", avg_total)
-            if "min" in self.arc_measures:
+            if "min" in measures_for_dimension:
                 section_content += GRAPHVIZ_ARC_DATA_ROW.format("MIN", minimum)
-            if "max" in self.arc_measures:
+            if "max" in measures_for_dimension:
                 section_content += GRAPHVIZ_ARC_DATA_ROW.format("MAX", maximum)
 
         elif dimension == "flexibility":
+            # Flexibility always shows if dimension has any measures configured
             is_optional = node.dimensions_data["flexibility"]["is_optional"]
             section_content += GRAPHVIZ_ARC_DATA_ROW.format("Is Optional?", is_optional)
 
         elif dimension == "quality":
+            # Quality always shows if dimension has any measures configured
             is_rework = node.dimensions_data["quality"]["is_rework"]
             section_content += GRAPHVIZ_ARC_DATA_ROW.format("Is Rework?", is_rework)
 
