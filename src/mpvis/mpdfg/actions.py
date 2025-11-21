@@ -28,6 +28,7 @@ def discover_multi_perspective_dfg(
     frequency_statistic: str = "absolute-activity",
     time_statistic: str = "mean",
     cost_statistic: str = "mean",
+    custom_perspectives: list[dict] | None = None,
 ) -> Tuple[dict, dict, dict]:
     """
     Discovers a multi-perspective Directly-Follows Graph (DFG) from a log.
@@ -45,11 +46,41 @@ def discover_multi_perspective_dfg(
         frequency_statistic (str , optional): The statistic to use for activity frequencies. Valid values are "absolute-activity", "absolute-case", "relative-case" and "relative-activity". Defaults to "absolute-activity".
         time_statistic (str, optional): The statistic to use for activity times. Valid values are "mean", "sum", "max", "min", "median" and "stdev". Defaults to "mean".
         cost_statistic (str, optional): The statistic to use for activity costs. Valid values are "mean, "sum", "max", "min", "median" and "stdev". Defaults to "mean".
+        custom_perspectives (list[dict], optional): List of custom perspectives to calculate. Each dictionary should contain:
+            - name (str): Name of the perspective (e.g., "resource", "role")
+            - column_key (str): Column name in the DataFrame
+            - data_type (str): Type of data ("numeric", "categorical", "timestamp")
+            - statistic (str): Statistic to calculate (depends on data_type)
+            - apply_to_connections (bool, optional): Whether to apply to connections. Defaults to False.
+            - color_palette (str, optional): Color palette to use. Defaults to "default".
+
+            Example:
+                [
+                    {
+                        "name": "resource_count",
+                        "column_key": "org:resource",
+                        "data_type": "categorical",
+                        "statistic": "unique_count"
+                    },
+                    {
+                        "name": "priority",
+                        "column_key": "priority",
+                        "data_type": "numeric",
+                        "statistic": "mean"
+                    }
+                ]
 
     Returns:
         Tuple[dict, dict, dict]: A tuple containing the multi-perspective DFG, start activities, and end activities.
 
     """
+    # Convert custom_perspectives dicts to CustomPerspective objects
+    from mpvis.mpdfg.dfg_parameters import CustomPerspective
+
+    custom_persp_objects = None
+    if custom_perspectives:
+        custom_persp_objects = [CustomPerspective(**persp) for persp in custom_perspectives]
+
     dfg_parameters = DirectlyFollowsGraphParameters(
         case_id_key,
         activity_key,
@@ -62,6 +93,7 @@ def discover_multi_perspective_dfg(
         frequency_statistic,
         time_statistic,
         cost_statistic,
+        custom_persp_objects,
     )
     dfg = DirectlyFollowsGraph(log, dfg_parameters)
     dfg.build()
