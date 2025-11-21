@@ -29,7 +29,7 @@ def view_graphviz_diagram(dfg_string: str, format: str):
 
     if is_google_colab() or is_jupyter_notebook():
         if format not in ["jpg", "png", "jpeg", "svg"]:
-            msg_error = "Format value should be a valid image extension for interactive Python Environments. Options are 'jpg', 'png', 'jpeq' or 'svg'"
+            msg_error = "Format value should be a valid image extension for interactive Python Environments. Options are 'jpg', 'png', 'jpeg' or 'svg'"
             raise ValueError(msg_error)
         from IPython.display import SVG, Image, display
 
@@ -43,7 +43,7 @@ def view_graphviz_diagram(dfg_string: str, format: str):
         from PIL import Image
 
         if format not in ["jpg", "png", "jpeg", "webp", "svg"]:
-            msg_error = "Format value should be a valid image extension for interactive Python Environments. Options are 'jpg', 'png', 'jpeq', 'webp' or 'svg'"
+            msg_error = "Format value should be a valid image extension for interactive Python Environments. Options are 'jpg', 'png', 'jpeg', 'webp' or 'svg'"
             raise ValueError(msg_error)
 
         with tempfile.NamedTemporaryFile(suffix=f".{format}", delete=False) as temp_file:

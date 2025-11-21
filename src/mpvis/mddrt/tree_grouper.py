@@ -46,7 +46,7 @@ class DirectedRootedTreeGrouper:
 
     def group_nodes(self, parent_node: TreeNode, nodes: list[TreeNode]) -> None:
         new_node_name = self.create_new_node_name(nodes)
-        new_node = TreeNode(new_node_name, nodes[0].depth)
+        new_node = TreeNode(name=new_node_name, depth=nodes[0].depth, is_path_end=False)
 
         self.group_dimensions_data_in_new_node(new_node, nodes)
         self.replace_old_nodes_with_new(parent_node, new_node, nodes)

@@ -21,7 +21,7 @@ class DirectlyRootedTreeBuilder:
     def __init__(self, log: pd.DataFrame, params: DirectlyRootedTreeParameters) -> None:
         self.log: pd.DataFrame = log
         self.params: DirectlyRootedTreeParameters = params
-        self.tree: TreeNode = TreeNode(name="root", depth=-1)
+        self.tree: TreeNode = TreeNode(name="root", depth=-1, is_path_end=False)
         self.cases: dict = {}
         self.dimensions_to_calculate: list[str] = dimensions_to_calculate(params)
         self.build()
@@ -50,12 +50,10 @@ class DirectlyRootedTreeBuilder:
                 "quality": "Rework",
             }
             for dimension in self.dimensions_to_calculate:
+                metric_value = case_metrics[metrics_mapping[dimension]]
                 if dimension == "time":
-                    cases[case_id][dimension] = case_metrics[
-                        metrics_mapping[dimension]
-                    ].to_pytimedelta()
-                else:
-                    cases[case_id][dimension] = case_metrics[metrics_mapping[dimension]]
+                    metric_value = metric_value.to_pytimedelta()
+                cases[case_id][dimension] = metric_value
 
         self.cases = cases
 
@@ -102,16 +100,27 @@ class DirectlyRootedTreeBuilder:
 
     def add_case_to_tree(self, root: TreeNode, current_case: dict) -> None:
         parent_node = root
-        for depth, activity in enumerate(current_case["activities"]):
-            current_node = self.get_or_create_node(parent_node, activity["name"], depth)
+        activities = current_case["activities"]
+        for depth, activity in enumerate(activities):
+            is_path_end = depth == len(activities) - 1
+            current_node = self.get_or_create_node(
+                parent_node=parent_node,
+                activity_name=activity["name"],
+                depth=depth,
+                is_path_end=is_path_end,
+            )
             current_node.update_frequency()
             self.update_node_dimensions(current_node, depth, current_case)
             parent_node = current_node
 
-    def get_or_create_node(self, parent_node: TreeNode, activity_name: str, depth: int) -> TreeNode:
-        current_node = parent_node.get_child_by_name_and_depth(activity_name, depth)
+    def get_or_create_node(
+        self, *, parent_node: TreeNode, activity_name: str, depth: int, is_path_end: bool
+    ) -> TreeNode:
+        current_node = parent_node.get_child_by_name_depth_and_end_status(
+            name=activity_name, depth=depth, is_path_end=is_path_end
+        )
         if not current_node:
-            current_node = TreeNode(activity_name, depth)
+            current_node = TreeNode(name=activity_name, depth=depth, is_path_end=is_path_end)
             current_node.set_parent(parent_node)
             parent_node.add_children(current_node)
         return current_node
