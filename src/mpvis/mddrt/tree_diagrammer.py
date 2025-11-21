@@ -6,8 +6,15 @@ from typing import TYPE_CHECKING, Callable, Literal
 import graphviz
 
 from mpvis.mddrt.utils.constants import (
+    ARC_HEADER_BG_COLORS,
+    ARC_TEXT_COLORS,
     GRAPHVIZ_ACTIVITY,
     GRAPHVIZ_ACTIVITY_DATA,
+    GRAPHVIZ_ACTIVITY_DATA_COLORED,
+    GRAPHVIZ_ARC_DATA_ROW,
+    GRAPHVIZ_ARC_DIMENSION_HEADER,
+    GRAPHVIZ_ARC_HEADER,
+    GRAPHVIZ_ARC_TABLE,
     GRAPHVIZ_STATE_NODE,
     GRAPHVIZ_STATE_NODE_ROW,
 )
@@ -147,39 +154,65 @@ class DirectlyRootedTreeDiagrammer:
 
     def build_link_label(self, node: TreeNode) -> str:
         node_name = self.build_activity_link_name(node)
-        content = GRAPHVIZ_ACTIVITY_DATA.format(node_name)
+
+        # Create a wrapper table with an invisible spacer cell on the left
+        # Start with header row containing activity name and frequency
+        activity_header = f"{node_name} ({node.frequency})"
+        content = GRAPHVIZ_ARC_HEADER.format(activity_header)
+
+        # Add dimension sections if arc_measures are enabled
         if len(self.arc_measures) > 0:
             for dimension in self.dimensions_to_diagram:
-                content += self.build_link_string(dimension, node)
-        return GRAPHVIZ_ACTIVITY.format(content)
+                content += self.build_link_dimension_section(dimension, node)
 
-    def build_link_string(
+        # Wrap the table with a spacer to push it right and add vertical spacing
+        table_content = GRAPHVIZ_ARC_TABLE.format(content)
+        return f'<table border="0" cellborder="0" cellspacing="0" cellpadding="0"><tr><td height="10"></td></tr><tr><td width="10"></td><td>{table_content}</td></tr><tr><td height="10"></td></tr></table>'
+
+    def build_link_dimension_section(
         self,
         dimension: Literal["cost", "time", "flexibility", "quality"],
         node: TreeNode,
     ) -> str:
+        """Build a table section for a specific dimension with header and data rows."""
         if len(self.arc_measures) == 0 or not any(
             item in ["avg", "max", "min"] for item in self.arc_measures
         ):
-            return " "
-        avg_total = (
-            self.format_value("total", dimension, node)
-            if dimension != "time"
-            else self.format_value("service", dimension, node)
-        )
-        maximum = self.format_value("max", dimension, node)
-        minimum = self.format_value("min", dimension, node)
-        link_row = f"{'Service' if dimension == 'time' else ''} {dimension.capitalize()}<br/>"
-        if dimension in ["time", "cost"]:
-            link_row += f"Avg: {avg_total}<br/>" if "avg" in self.arc_measures else ""
-            link_row += f"Max: {maximum}<br/>" if "max" in self.arc_measures else ""
-            link_row += f"Min: {minimum}<br/>" if "min" in self.arc_measures else ""
-        elif dimension == "flexibility":
-            link_row += f"Is Optional: {node.dimensions_data['flexibility']['is_optional']}<br/>"
-        elif dimension == "quality":
-            link_row += f"Is Rework: {node.dimensions_data['quality']['is_rework']}<br/>"
+            return ""
 
-        return GRAPHVIZ_ACTIVITY_DATA.format(link_row)
+        # Get background color for dimension header
+        bg_color = ARC_HEADER_BG_COLORS.get(dimension, "#666666")
+
+        # Create dimension header with colored background
+        dimension_label = f"{'Service ' if dimension == 'time' else ''}{dimension.capitalize()}"
+        section_content = GRAPHVIZ_ARC_DIMENSION_HEADER.format(bg_color, dimension_label)
+
+        # Add data rows based on dimension type
+        if dimension in ["time", "cost"]:
+            avg_total = (
+                self.format_value("total", dimension, node)
+                if dimension != "time"
+                else self.format_value("service", dimension, node)
+            )
+            maximum = self.format_value("max", dimension, node)
+            minimum = self.format_value("min", dimension, node)
+
+            if "avg" in self.arc_measures:
+                section_content += GRAPHVIZ_ARC_DATA_ROW.format("AVG", avg_total)
+            if "min" in self.arc_measures:
+                section_content += GRAPHVIZ_ARC_DATA_ROW.format("MIN", minimum)
+            if "max" in self.arc_measures:
+                section_content += GRAPHVIZ_ARC_DATA_ROW.format("MAX", maximum)
+
+        elif dimension == "flexibility":
+            is_optional = node.dimensions_data["flexibility"]["is_optional"]
+            section_content += GRAPHVIZ_ARC_DATA_ROW.format("Is Optional?", is_optional)
+
+        elif dimension == "quality":
+            is_rework = node.dimensions_data["quality"]["is_rework"]
+            section_content += GRAPHVIZ_ARC_DATA_ROW.format("Is Rework?", is_rework)
+
+        return section_content
 
     def format_value(
         self,
@@ -217,7 +250,7 @@ class DirectlyRootedTreeDiagrammer:
         if "&lt;br/&gt;" in node_name:
             node_name = node_name.replace("&lt;br/&gt;", "<br/>")
 
-        return f"{node_name} ({node.frequency})"
+        return node_name
 
     def build_dimension_row_string(self, dimension: str, metric: str) -> str:
         metric_string_mapper = {
