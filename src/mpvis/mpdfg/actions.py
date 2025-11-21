@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Literal, Tuple
 
 import pandas as pd
@@ -256,6 +257,7 @@ def save_vis_multi_perspective_dfg(
     format: str = "svg",
     rankdir: str = "TD",
     diagram_tool: str = "graphviz",
+    renderer: str | None = None,
     arc_thickness_by: Literal["frequency", "time"] = "frequency",
 ):
     """
@@ -274,6 +276,7 @@ def save_vis_multi_perspective_dfg(
         format (str, optional): The format of the visual representation file. Defaults to "svg". More output formats can be found at https://graphviz.org/docs/outputs
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD".
         diagram_tool (str | "graphviz" | "mermaid", optional): The diagram tool to use for building the diagram. Defaults to "graphviz".
+        renderer (str, optional): The renderer to use for the graphviz diagram. Options are "cairo", "dot", "gd". Defaults to None.
         arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time". Defaults to "frequency".
 
     Note:
@@ -293,7 +296,7 @@ def save_vis_multi_perspective_dfg(
         arc_thickness_by=arc_thickness_by,
     )
     if diagram_tool == "graphviz":
-        save_graphviz_diagram(dfg_string, file_name, format)
+        save_graphviz_diagram(dfg_string, file_name, format, renderer)
     elif diagram_tool == "mermaid":
         save_mermaid_diagram(dfg_string, file_name)
     else:
