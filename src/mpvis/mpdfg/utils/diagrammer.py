@@ -3,7 +3,10 @@ from datetime import timedelta
 from mpvis.mpdfg.utils.color_scales import (
     COST_COLOR_SCALE,
     FREQUENCY_COLOR_SCALE,
+    GRAY_COLOR_SCALE,
+    PURPLE_COLOR_SCALE,
     TIME_COLOR_SCALE,
+    YELLOW_COLOR_SCALE,
 )
 
 
@@ -34,19 +37,34 @@ def ids_mapping(activities):
     return mapping
 
 
-def background_color(measure, dimension, dimension_scale):
+def background_color(measure, dimension, dimension_scale, custom_palette_name=None):
     colors_palette_scale = (90, 255)
-    color_palette = color_palette_by_dimension(dimension)
+    color_palette = color_palette_by_dimension(dimension, custom_palette_name)
     assigned_color_index = round(interpolated_value(measure, dimension_scale, colors_palette_scale))
     return color_palette[assigned_color_index]
 
 
-def color_palette_by_dimension(dimension):
+def color_palette_by_dimension(dimension, custom_palette_name=None):
+    # Built-in perspectives
     if dimension == "frequency":
         return FREQUENCY_COLOR_SCALE
     if dimension == "cost":
         return COST_COLOR_SCALE
-    return TIME_COLOR_SCALE
+    if dimension == "time":
+        return TIME_COLOR_SCALE
+
+    # Custom perspectives - use palette name or default based on type
+    if custom_palette_name:
+        palette_map = {
+            "purple": PURPLE_COLOR_SCALE,
+            "yellow": YELLOW_COLOR_SCALE,
+            "gray": GRAY_COLOR_SCALE,
+            "default": GRAY_COLOR_SCALE,
+        }
+        return palette_map.get(custom_palette_name, GRAY_COLOR_SCALE)
+
+    # Default for unknown dimensions
+    return GRAY_COLOR_SCALE
 
 
 def interpolated_value(measure, from_scale, to_scale):
