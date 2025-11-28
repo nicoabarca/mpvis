@@ -50,7 +50,11 @@ class DirectlyFollowsGraphBuilder:
                 activity[self.parameters.timestamp_key]
                 - activity[self.parameters.start_timestamp_key]
             )
-            activity_cost = activity[self.parameters.cost_key]
+            # Only try to get cost if we're calculating it
+            activity_cost = None
+            if self.parameters.calculate_cost:
+                activity_cost = activity[self.parameters.cost_key]
+
             self.update_activity_data(activity_name, activity_time, activity_cost, activity)
         except KeyError:
             pass
@@ -61,7 +65,7 @@ class DirectlyFollowsGraphBuilder:
             activity["frequency"] += 1
         if self.parameters.calculate_time:
             activity["time"].append(time.total_seconds())
-        if self.parameters.calculate_cost:
+        if self.parameters.calculate_cost and cost is not None:
             activity["cost"].append(cost)
 
         # Collect custom perspectives data
