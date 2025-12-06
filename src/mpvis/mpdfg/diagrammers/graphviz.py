@@ -254,20 +254,29 @@ class GraphVizDiagrammer:
 
     def _format_custom_perspective_value(self, measure, perspective_config):
         """Format a custom perspective value based on its data type and statistic."""
+        # Handle None or empty values
+        if measure is None or (isinstance(measure, str) and measure == ""):
+            return "N/A"
+
         if perspective_config.data_type == "numeric":
             # For numeric, show with 2 decimals
+            if measure == 0:
+                return "0"
             return f"{measure:,.2f}"
 
         elif perspective_config.data_type == "categorical":
             # Formatting depends on the statistic
             if perspective_config.statistic == "unique_count":
-                return f"{int(measure)} unique"
+                count = int(measure)
+                if count == 0:
+                    return "No data"
+                return f"{count} unique"
             elif perspective_config.statistic == "mode":
-                return str(measure)
+                return str(measure) if measure else "N/A"
             elif perspective_config.statistic == "distribution":
-                return str(measure)  # Already formatted in builder
+                return str(measure) if measure else "N/A"
             else:
-                return str(measure)
+                return str(measure) if measure else "N/A"
 
         elif perspective_config.data_type == "timestamp":
             # For timestamps, format based on statistic
@@ -283,7 +292,7 @@ class GraphVizDiagrammer:
                     return str(measure)
 
         # Fallback
-        return str(measure)
+        return str(measure) if measure else "N/A"
 
     def build_activity_name(self, activity_name: str) -> str:
         if "&" in activity_name:

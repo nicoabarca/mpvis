@@ -778,17 +778,18 @@ COST_COLOR_SCALE = [
 ]
 
 # Generic color scales for custom perspectives
-# Purple gradient for categorical perspectives
+# Purple gradient for categorical perspectives (better contrast)
 PURPLE_COLOR_SCALE = [
-    "#fcfbfd", "#efedf5", "#dadaeb", "#bcbddc", "#9e9ac8", "#807dba", "#6a51a3", "#54278f", "#3f007d"
-] * 28 + ["#3f007d"] * 4  # Repeat to reach 256 colors
+    "#e1d5e7", "#d4c5dd", "#c8b5d3", "#bba5c9", "#af95bf", "#a285b5", "#9675ab", "#8965a1",
+    "#7d5597", "#70458d", "#643583", "#572579", "#4b156f", "#3f0565", "#32005b"
+] * 17 + ["#32005b"] * 1  # Repeat to reach 256 colors
 
-# Yellow gradient for numeric custom perspectives
+# Yellow-Orange gradient for numeric custom perspectives (better visibility)
 YELLOW_COLOR_SCALE = [
-    "#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"
-] * 28 + ["#081d58"] * 4  # Repeat to reach 256 colors
+    "#fff7bc", "#fee391", "#fec44f", "#fe9929", "#ec7014", "#cc4c02", "#993404", "#662506"
+] * 32  # Repeat to reach 256 colors
 
-# Gray gradient for generic/default custom perspectives
+# Gray-Blue gradient for generic/default custom perspectives (more visible than pure gray)
 GRAY_COLOR_SCALE = [
-    "#ffffff", "#f7f7f7", "#d9d9d9", "#bdbdbd", "#969696", "#737373", "#525252", "#252525", "#000000"
-] * 28 + ["#000000"] * 4  # Repeat to reach 256 colors
+    "#f0f0f0", "#d9d9d9", "#bdbdbd", "#969696", "#737373", "#525252", "#252525", "#000000"
+] * 32  # Repeat to reach 256 colors

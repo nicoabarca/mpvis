@@ -189,7 +189,7 @@ def get_multi_perspective_dfg_string(
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD".
         diagram_tool (str, optional): The diagram_tool to use for building the diagram. Valid values are "graphviz" and "mermaid". Defaults to "graphviz".
         arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time". Defaults to "frequency".
-        custom_perspectives_config (list, optional): List of CustomPerspective objects with configuration. Defaults to None.
+        custom_perspectives_config (list, optional): List of CustomPerspective objects or dicts with configuration. Defaults to None.
         visualize_custom_perspectives (dict, optional): Dictionary mapping perspective names to bool indicating if they should be visualized. Defaults to None.
 
     Returns:
@@ -199,6 +199,17 @@ def get_multi_perspective_dfg_string(
         Mermaid diagrammer only supports saving the DFG diagram as a HTML file. It does not support viewing the diagram in interactive Python environments like Jupyter Notebooks and Google Colabs. Also the user needs internet connection to properly show the diagram in the HTML.
 
     """
+    # Convert custom_perspectives dicts to CustomPerspective objects if needed
+    from mpvis.mpdfg.dfg_parameters import CustomPerspective
+
+    custom_persp_objects = None
+    if custom_perspectives_config:
+        # Check if list contains dicts or CustomPerspective objects
+        if isinstance(custom_perspectives_config[0], dict):
+            custom_persp_objects = [CustomPerspective(**persp) for persp in custom_perspectives_config]
+        else:
+            custom_persp_objects = custom_perspectives_config
+
     diagrammer = None
     if diagram_tool == "graphviz":
         diagrammer = GraphVizDiagrammer(
@@ -211,7 +222,7 @@ def get_multi_perspective_dfg_string(
             cost_currency,
             rankdir,
             arc_thickness_by,
-            custom_perspectives_config,
+            custom_persp_objects,
             visualize_custom_perspectives,
         )
     else:

@@ -174,4 +174,8 @@ class DirectlyFollowsGraphBuilder:
         else:
             value = statistics_functions[dimension_statistic](data)
 
-        return max(value, 0)
+        # Only apply max(value, 0) for numeric values
+        # For categorical statistics (mode, distribution), return as-is
+        if isinstance(value, (int, float)):
+            return max(value, 0)
+        return value
