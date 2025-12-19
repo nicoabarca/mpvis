@@ -28,6 +28,7 @@ def discover_multi_perspective_dfg(
     frequency_statistic: str = "absolute-activity",
     time_statistic: str = "mean",
     cost_statistic: str = "mean",
+    custom_perspectives: list[dict] | None = None,
 ) -> Tuple[dict, dict, dict]:
     """
     Discovers a multi-perspective Directly-Follows Graph (DFG) from a log.
@@ -45,11 +46,41 @@ def discover_multi_perspective_dfg(
         frequency_statistic (str , optional): The statistic to use for activity frequencies. Valid values are "absolute-activity", "absolute-case", "relative-case" and "relative-activity". Defaults to "absolute-activity".
         time_statistic (str, optional): The statistic to use for activity times. Valid values are "mean", "sum", "max", "min", "median" and "stdev". Defaults to "mean".
         cost_statistic (str, optional): The statistic to use for activity costs. Valid values are "mean, "sum", "max", "min", "median" and "stdev". Defaults to "mean".
+        custom_perspectives (list[dict], optional): List of custom perspectives to calculate. Each dictionary should contain:
+            - name (str): Name of the perspective (e.g., "resource", "role")
+            - column_key (str): Column name in the DataFrame
+            - data_type (str): Type of data ("numeric", "categorical", "timestamp")
+            - statistic (str): Statistic to calculate (depends on data_type)
+            - apply_to_connections (bool, optional): Whether to apply to connections. Defaults to False.
+            - color_palette (str, optional): Color palette to use. Defaults to "default".
+
+            Example:
+                [
+                    {
+                        "name": "resource_count",
+                        "column_key": "org:resource",
+                        "data_type": "categorical",
+                        "statistic": "unique_count"
+                    },
+                    {
+                        "name": "priority",
+                        "column_key": "priority",
+                        "data_type": "numeric",
+                        "statistic": "mean"
+                    }
+                ]
 
     Returns:
         Tuple[dict, dict, dict]: A tuple containing the multi-perspective DFG, start activities, and end activities.
 
     """
+    # Convert custom_perspectives dicts to CustomPerspective objects
+    from mpvis.mpdfg.dfg_parameters import CustomPerspective
+
+    custom_persp_objects = None
+    if custom_perspectives:
+        custom_persp_objects = [CustomPerspective(**persp) for persp in custom_perspectives]
+
     dfg_parameters = DirectlyFollowsGraphParameters(
         case_id_key,
         activity_key,
@@ -62,6 +93,7 @@ def discover_multi_perspective_dfg(
         frequency_statistic,
         time_statistic,
         cost_statistic,
+        custom_persp_objects,
     )
     dfg = DirectlyFollowsGraph(log, dfg_parameters)
     dfg.build()
@@ -140,6 +172,8 @@ def get_multi_perspective_dfg_string(
     rankdir: str = "TD",
     diagram_tool: str = "graphviz",
     arc_thickness_by: Literal["frequency", "time"] = "frequency",
+    custom_perspectives_config: list = None,
+    visualize_custom_perspectives: dict = None,
 ):
     """
     Creates a string representation of a multi-perspective Directly-Follows Graph (DFG) diagram.
@@ -155,6 +189,8 @@ def get_multi_perspective_dfg_string(
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD".
         diagram_tool (str, optional): The diagram_tool to use for building the diagram. Valid values are "graphviz" and "mermaid". Defaults to "graphviz".
         arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time". Defaults to "frequency".
+        custom_perspectives_config (list, optional): List of CustomPerspective objects or dicts with configuration. Defaults to None.
+        visualize_custom_perspectives (dict, optional): Dictionary mapping perspective names to bool indicating if they should be visualized. Defaults to None.
 
     Returns:
         str: The string representation of the multi-perspective DFG diagram.
@@ -163,6 +199,17 @@ def get_multi_perspective_dfg_string(
         Mermaid diagrammer only supports saving the DFG diagram as a HTML file. It does not support viewing the diagram in interactive Python environments like Jupyter Notebooks and Google Colabs. Also the user needs internet connection to properly show the diagram in the HTML.
 
     """
+    # Convert custom_perspectives dicts to CustomPerspective objects if needed
+    from mpvis.mpdfg.dfg_parameters import CustomPerspective
+
+    custom_persp_objects = None
+    if custom_perspectives_config:
+        # Check if list contains dicts or CustomPerspective objects
+        if isinstance(custom_perspectives_config[0], dict):
+            custom_persp_objects = [CustomPerspective(**persp) for persp in custom_perspectives_config]
+        else:
+            custom_persp_objects = custom_perspectives_config
+
     diagrammer = None
     if diagram_tool == "graphviz":
         diagrammer = GraphVizDiagrammer(
@@ -175,6 +222,8 @@ def get_multi_perspective_dfg_string(
             cost_currency,
             rankdir,
             arc_thickness_by,
+            custom_persp_objects,
+            visualize_custom_perspectives,
         )
     else:
         diagrammer = MermaidDiagrammer(
@@ -204,6 +253,8 @@ def view_multi_perspective_dfg(
     rankdir: str = "TD",
     format: str = "svg",
     arc_thickness_by: Literal["frequency", "time"] = "frequency",
+    custom_perspectives_config: list = None,
+    visualize_custom_perspectives: dict = None,
 ):
     """
     Visualizes a multi-perspective Directly-Follows Graph (DFG) using graphviz in interactive Python environments.
@@ -219,6 +270,8 @@ def view_multi_perspective_dfg(
         rankdir (str, optional): The direction of the graph layout. Defaults to "TD" (top-down).
         format (str, optional): The file format of the visualization output (e.g., "jpg", "png", "jpeg", "svg", "webp"). Defaults to "svg".
         arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time". Defaults to "frequency".
+        custom_perspectives_config (list, optional): List of CustomPerspective objects with configuration. Defaults to None.
+        visualize_custom_perspectives (dict, optional): Dictionary mapping perspective names to bool indicating if they should be visualized. Defaults to None.
 
     Raises:
         IOError: if the temporary file cannot be created or read.
@@ -240,6 +293,8 @@ def view_multi_perspective_dfg(
         cost_currency=cost_currency,
         rankdir=rankdir,
         arc_thickness_by=arc_thickness_by,
+        custom_perspectives_config=custom_perspectives_config,
+        visualize_custom_perspectives=visualize_custom_perspectives,
     )
 
     view_graphviz_diagram(dfg_string, format=format)
@@ -259,6 +314,8 @@ def save_vis_multi_perspective_dfg(
     diagram_tool: str = "graphviz",
     renderer: str | None = None,
     arc_thickness_by: Literal["frequency", "time"] = "frequency",
+    custom_perspectives_config: list = None,
+    visualize_custom_perspectives: dict = None,
 ):
     """
     Save a visual representation of a multi-perspective Directly-Follows Graph (DFG) to a file.
@@ -278,6 +335,8 @@ def save_vis_multi_perspective_dfg(
         diagram_tool (str | "graphviz" | "mermaid", optional): The diagram tool to use for building the diagram. Defaults to "graphviz".
         renderer (str, optional): The renderer to use for the graphviz diagram. Options are "cairo", "dot", "gd". Defaults to None.
         arc_thickness_by (str, optional): Controls arc thickness based on perspective. Valid values are "frequency", "time". Defaults to "frequency".
+        custom_perspectives_config (list, optional): List of CustomPerspective objects with configuration. Defaults to None.
+        visualize_custom_perspectives (dict, optional): Dictionary mapping perspective names to bool indicating if they should be visualized. Defaults to None.
 
     Note:
         Mermaid diagrammer only supports saving the DFG diagram as a HTML file. It does not support viewing the diagram in interactive Python environments like Jupyter Notebooks and Google Colabs. Also the user needs internet connection to properly show the diagram in the HTML.
@@ -294,6 +353,8 @@ def save_vis_multi_perspective_dfg(
         rankdir=rankdir,
         diagram_tool=diagram_tool,
         arc_thickness_by=arc_thickness_by,
+        custom_perspectives_config=custom_perspectives_config,
+        visualize_custom_perspectives=visualize_custom_perspectives,
     )
     if diagram_tool == "graphviz":
         save_graphviz_diagram(dfg_string, file_name, format, renderer)

@@ -4,12 +4,12 @@ from collections import deque
 from datetime import timedelta
 from typing import TYPE_CHECKING, Literal
 
-from mpvis.mddrt.utils.color_schemes import (
-    COST_COLOR_SCHEME,
-    FLEXIBILITY_COLOR_SCHEME,
-    FREQUENCY_COLOR_SCHEME,
-    QUALITY_COLOR_SCHEME,
-    TIME_COLOR_SCHEME,
+from mpvis.utils.color_scales import (
+    COST_COLOR_SCALE as COST_COLOR_SCHEME,
+    FLEXIBILITY_COLOR_SCALE as FLEXIBILITY_COLOR_SCHEME,
+    FREQUENCY_COLOR_SCALE as FREQUENCY_COLOR_SCHEME,
+    QUALITY_COLOR_SCALE as QUALITY_COLOR_SCHEME,
+    TIME_COLOR_SCALE as TIME_COLOR_SCHEME,
 )
 
 if TYPE_CHECKING:

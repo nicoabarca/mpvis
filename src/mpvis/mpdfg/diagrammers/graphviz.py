@@ -30,6 +30,8 @@ class GraphVizDiagrammer:
         cost_currency: str = "USD",
         rankdir: str = "TB",
         arc_thickness_by: Literal["frequency", "time"] = "frequency",
+        custom_perspectives_config: list = None,
+        visualize_custom_perspectives: dict = None,
     ):
         self.dfg = dfg
         self.start_activities = start_activities
@@ -40,10 +42,17 @@ class GraphVizDiagrammer:
         self.cost_currency = cost_currency
         self.rankdir = rankdir
         self.arc_thickness_by = arc_thickness_by
+        self.custom_perspectives_config = custom_perspectives_config or []
+        self.visualize_custom_perspectives = visualize_custom_perspectives or {}
         self.activities_ids = {}
         self.activities_dimensions_min_and_max = {}
         self.connections_dimensions_min_and_max = {}
         self.diagram = graphviz.Digraph("mpdfg", comment="Multi Perspective DFG")
+
+        # Create a mapping from perspective name to config for quick lookup
+        self.perspective_config_map = {
+            p.name: p for p in self.custom_perspectives_config
+        }
 
         self.set_activities_ids_mapping()
         self.set_dimensions_min_and_max()
@@ -101,24 +110,55 @@ class GraphVizDiagrammer:
         return GRAPHVIZ_NODE_DATA.format(dimensions_rows_data)
 
     def activity_label_data(self, activity, dimension, measure):
-        bgcolor = background_color(
-            measure, dimension, self.activities_dimensions_min_and_max[dimension]
-        )
-        content = ""
+        # Built-in perspectives
         if dimension == "frequency":
+            bgcolor = background_color(
+                measure, dimension, self.activities_dimensions_min_and_max[dimension]
+            )
             bgcolor = bgcolor if self.visualize_frequency else "royalblue"
             activity_name = self.build_activity_name(activity)
             content = (
                 f"{activity_name} ({f'{measure:,}'})" if self.visualize_frequency else activity_name
             )
+            return bgcolor, content
 
-        elif dimension == "time" and self.visualize_time:
-            content = format_time(measure)
+        elif dimension == "time":
+            if self.visualize_time:
+                bgcolor = background_color(
+                    measure, dimension, self.activities_dimensions_min_and_max[dimension]
+                )
+                content = format_time(measure)
+                return bgcolor, content
+            return "white", ""
 
-        elif dimension == "cost" and self.visualize_cost:
-            content = f"{f'{measure:,}'} {self.cost_currency}"
+        elif dimension == "cost":
+            if self.visualize_cost:
+                bgcolor = background_color(
+                    measure, dimension, self.activities_dimensions_min_and_max[dimension]
+                )
+                content = f"{f'{measure:,}'} {self.cost_currency}"
+                return bgcolor, content
+            return "white", ""
 
-        return bgcolor, content
+        # Custom perspectives
+        elif dimension in self.perspective_config_map:
+            # Check if we should visualize this custom perspective
+            should_visualize = self.visualize_custom_perspectives.get(dimension, True)
+            if not should_visualize:
+                return "white", ""
+
+            perspective_config = self.perspective_config_map[dimension]
+            bgcolor = background_color(
+                measure,
+                dimension,
+                self.activities_dimensions_min_and_max[dimension],
+                custom_palette_name=perspective_config.color_palette
+            )
+            content = self._format_custom_perspective_value(measure, perspective_config)
+            return bgcolor, content
+
+        # Unknown dimension
+        return "white", ""
 
     def add_connections(self):
         self.add_extreme_connection_edges("start")
@@ -175,16 +215,84 @@ class GraphVizDiagrammer:
         return GRAPHVIZ_LINK_DATA.format(dimensions_string)
 
     def connection_label_data(self, dimension, measure):
-        bgcolor = background_color(
-            measure, dimension, self.connections_dimensions_min_and_max[dimension]
-        )
-        content = ""
+        # Built-in perspectives
         if dimension == "frequency":
-            content = f"{measure:,}" if self.visualize_frequency else content
-        elif dimension == "time" and self.visualize_time:
-            content = format_time(measure)
+            bgcolor = background_color(
+                measure, dimension, self.connections_dimensions_min_and_max[dimension]
+            )
+            content = f"{measure:,}" if self.visualize_frequency else ""
+            return bgcolor, content
 
-        return bgcolor, content
+        elif dimension == "time":
+            if self.visualize_time:
+                bgcolor = background_color(
+                    measure, dimension, self.connections_dimensions_min_and_max[dimension]
+                )
+                content = format_time(measure)
+                return bgcolor, content
+            return "white", ""
+
+        # Custom perspectives
+        elif dimension in self.perspective_config_map:
+            # Check if we should visualize this custom perspective
+            should_visualize = self.visualize_custom_perspectives.get(dimension, True)
+            if not should_visualize:
+                return "white", ""
+
+            perspective_config = self.perspective_config_map[dimension]
+            bgcolor = background_color(
+                measure,
+                dimension,
+                self.connections_dimensions_min_and_max[dimension],
+                custom_palette_name=perspective_config.color_palette
+            )
+            content = self._format_custom_perspective_value(measure, perspective_config)
+            return bgcolor, content
+
+        # Unknown dimension
+        return "white", ""
+
+    def _format_custom_perspective_value(self, measure, perspective_config):
+        """Format a custom perspective value based on its data type and statistic."""
+        # Handle None or empty values
+        if measure is None or (isinstance(measure, str) and measure == ""):
+            return "N/A"
+
+        if perspective_config.data_type == "numeric":
+            # For numeric, show with 2 decimals
+            if measure == 0:
+                return "0"
+            return f"{measure:,.2f}"
+
+        elif perspective_config.data_type == "categorical":
+            # Formatting depends on the statistic
+            if perspective_config.statistic == "unique_count":
+                count = int(measure)
+                if count == 0:
+                    return "No data"
+                return f"{count} unique"
+            elif perspective_config.statistic == "mode":
+                return str(measure) if measure else "N/A"
+            elif perspective_config.statistic == "distribution":
+                return str(measure) if measure else "N/A"
+            else:
+                return str(measure) if measure else "N/A"
+
+        elif perspective_config.data_type == "timestamp":
+            # For timestamps, format based on statistic
+            if perspective_config.statistic == "duration":
+                return format_time(measure)
+            else:
+                # For other timestamp statistics (mean, median, etc.), show as date/time
+                import pandas as pd
+                try:
+                    timestamp = pd.to_datetime(measure, unit='s')
+                    return timestamp.strftime("%Y-%m-%d %H:%M")
+                except:
+                    return str(measure)
+
+        # Fallback
+        return str(measure) if measure else "N/A"
 
     def build_activity_name(self, activity_name: str) -> str:
         if "&" in activity_name:
