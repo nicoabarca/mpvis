@@ -1,12 +1,11 @@
 from datetime import timedelta
 
-from mpvis.mpdfg.utils.color_scales import (
+from mpvis.utils.color_scales import (
     COST_COLOR_SCALE,
+    FLEXIBILITY_COLOR_SCALE,
     FREQUENCY_COLOR_SCALE,
-    GRAY_COLOR_SCALE,
-    PURPLE_COLOR_SCALE,
+    QUALITY_COLOR_SCALE,
     TIME_COLOR_SCALE,
-    YELLOW_COLOR_SCALE,
 )
 
 
@@ -19,12 +18,22 @@ def dimensions_min_and_max(activities, connections) -> tuple[dict, dict]:
     for dim in activities_dimensions:
         min_val = min(activity[dim] for activity in activities.values())
         max_val = max(activity[dim] for activity in activities.values())
-        activities_dimensions_min_and_max[dim] = (max(min_val, 0), max_val)
+        # Only apply max(min_val, 0) for numeric values
+        if isinstance(min_val, (int, float)):
+            activities_dimensions_min_and_max[dim] = (max(min_val, 0), max_val)
+        else:
+            # For non-numeric values (strings), use a dummy range
+            activities_dimensions_min_and_max[dim] = (0, 1)
 
     for dim in connections_dimensions:
         min_val = min(connection[dim] for connection in connections.values())
         max_val = max(connection[dim] for connection in connections.values())
-        connections_dimensions_min_and_max[dim] = (max(min_val, 0), max_val)
+        # Only apply max(min_val, 0) for numeric values
+        if isinstance(min_val, (int, float)):
+            connections_dimensions_min_and_max[dim] = (max(min_val, 0), max_val)
+        else:
+            # For non-numeric values (strings), use a dummy range
+            connections_dimensions_min_and_max[dim] = (0, 1)
 
     return activities_dimensions_min_and_max, connections_dimensions_min_and_max
 
@@ -38,6 +47,11 @@ def ids_mapping(activities):
 
 
 def background_color(measure, dimension, dimension_scale, custom_palette_name=None):
+    # For non-numeric measures (strings from categorical perspectives), use a default color
+    if not isinstance(measure, (int, float)):
+        color_palette = color_palette_by_dimension(dimension, custom_palette_name)
+        return color_palette[150]  # Use middle color from the palette
+
     colors_palette_scale = (90, 255)
     color_palette = color_palette_by_dimension(dimension, custom_palette_name)
     assigned_color_index = round(interpolated_value(measure, dimension_scale, colors_palette_scale))
@@ -53,18 +67,20 @@ def color_palette_by_dimension(dimension, custom_palette_name=None):
     if dimension == "time":
         return TIME_COLOR_SCALE
 
-    # Custom perspectives - use palette name or default based on type
+    # Custom perspectives - use palette name or default to available color scales
     if custom_palette_name:
         palette_map = {
-            "purple": PURPLE_COLOR_SCALE,
-            "yellow": YELLOW_COLOR_SCALE,
-            "gray": GRAY_COLOR_SCALE,
-            "default": GRAY_COLOR_SCALE,
+            "frequency": FREQUENCY_COLOR_SCALE,
+            "cost": COST_COLOR_SCALE,
+            "time": TIME_COLOR_SCALE,
+            "flexibility": FLEXIBILITY_COLOR_SCALE,
+            "quality": QUALITY_COLOR_SCALE,
+            "default": FREQUENCY_COLOR_SCALE,
         }
-        return palette_map.get(custom_palette_name, GRAY_COLOR_SCALE)
+        return palette_map.get(custom_palette_name, FREQUENCY_COLOR_SCALE)
 
     # Default for unknown dimensions
-    return GRAY_COLOR_SCALE
+    return FREQUENCY_COLOR_SCALE
 
 
 def interpolated_value(measure, from_scale, to_scale):
