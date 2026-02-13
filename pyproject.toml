@@ -1,10 +1,18 @@
 [project]
 name = "mpvis"
 version = "1.0.5"
-dependencies = ["pandas", "numpy", "pyarrow", "graphviz", "tqdm", "pm4py"]
+dependencies = [
+    "pandas",
+    "numpy",
+    "pyarrow", 
+    "graphviz",
+    "tqdm",
+    "pm4py",
+    "pillow>=12.1.1" # Enforce secure pillow version till higher dependencies update it. https://pillow.readthedocs.io/en/stable/releasenotes/12.1.1.html#security
+]
 description = "Package for Multi-Perspective Process Visualization"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
